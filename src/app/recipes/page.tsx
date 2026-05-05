@@ -20,6 +20,9 @@ export default function RecipesPage() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // Safe: Initializing client-side state from localStorage
+      // localStorage is only available in browser, not on server
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecipes(getAllRecipes());
     }
   }, [activeTab]);

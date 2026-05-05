@@ -15,7 +15,11 @@ function RecipeContent() {
   useEffect(() => {
     if (id && typeof window !== 'undefined') {
       const found = getRecipeById(id);
-      if (found) setRecipe(found);
+      if (found) {
+        // Safe: Initializing client-side state from localStorage
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setRecipe(found);
+      }
     }
   }, [id]);
 
