@@ -21,8 +21,14 @@ export default function Home() {
 
     try {
       const endpoint = isMock ? '/api/mock' : '/api/recipe';
-      const res = await fetch(`${endpoint}?mock=${Date.now() % 5}`, {
-        method: 'GET',
+      const url = isMock 
+        ? `${endpoint}?mock=${Date.now() % 5}`
+        : endpoint;
+      
+      const res = await fetch(url, {
+        method: isMock ? 'GET' : 'POST',
+        headers: isMock ? {} : { 'Content-Type': 'application/json' },
+        body: isMock ? undefined : JSON.stringify({ query: searchQuery }),
       });
 
       const data = await res.json();
