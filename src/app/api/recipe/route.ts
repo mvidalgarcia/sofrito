@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 function getClient() {
+  const apiKey = process.env.LLM_API_KEY;
+  if (!apiKey) {
+    throw new Error('LLM_API_KEY not configured');
+  }
   return new OpenAI({
-    apiKey: process.env.LLM_API_KEY,
+    apiKey,
     baseURL: process.env.LLM_BASE_URL || 'https://opencode.ai/zen/v1',
   });
 }
@@ -49,7 +53,7 @@ export async function POST(request: NextRequest) {
       });
 
       const content = response.choices[0].message.content?.trim();
-      if (!content) {
+      if (!content || content === '') {
         continue;
       }
 
@@ -62,7 +66,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(recipe);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.log(`Attempt ${attempt}/3 failed:`, msg);
+      console.error(`Attempt ${attempt}/3 failed:`, msg);
+      
+      // Don't retry if API key is missing
+      if (msg.includes('API key') || msg.includes('apiKey')) {
+        return NextResponse.json({ error: 'API not configured. Please add LLM_API_KEY in Vercel settings.' }, { status: 500 });
+      }
+      
       if (attempt === 3) {
         return NextResponse.json({ error: msg }, { status: 500 });
       }
