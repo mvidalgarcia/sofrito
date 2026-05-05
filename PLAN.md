@@ -141,6 +141,23 @@ src/
 3. ✅ Recipe search + save + made
 4. ✅ Recipe list + detail pages
 5. ✅ Documentation
+6. ⏳ CI/CD (in progress)
+7. ⏳ Tests (future)
+
+---
+
+## Testing Strategy (Future)
+
+- **Unit tests**: Test storage helpers, utility functions
+- **Component tests**: Test RecipeCard, RecipeDetail render
+- **E2E tests**: Test search → save → view flow
+- Use: Vitest + Playwright
+
+Run tests locally:
+```bash
+npm test        # unit
+npm run e2e     # e2e
+```
 
 ---
 
