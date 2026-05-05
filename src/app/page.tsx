@@ -69,7 +69,7 @@ export default function Home() {
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
             <div className="w-10 h-10 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mb-4"></div>
-            <div className="text-lg text-zinc-600 dark:text-zinc-400">Buscando recetas...</div>
+            <div className="text-lg text-zinc-600 dark:text-zinc-400">Buscando receta...</div>
           </div>
         )}
 
