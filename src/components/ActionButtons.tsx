@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Recipe, RecipeStatus } from '@/lib/types';
 import { saveRecipe, isNameSaved } from '@/lib/storage';
 import { useState, useEffect } from 'react';
@@ -9,6 +10,7 @@ interface ActionButtonsProps {
 }
 
 export function ActionButtons({ recipe }: ActionButtonsProps) {
+  const t = useTranslations();
   const [, setRefresh] = useState(0);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function ActionButtons({ recipe }: ActionButtonsProps) {
             : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
         }`}
       >
-        {savedStatus === 'saved' ? '✓ Guardada' : 'Guardar'}
+        {savedStatus === 'saved' ? `✓ ${t('saved')}` : t('save')}
       </button>
       <button
         onClick={() => handleSave('made')}
@@ -42,7 +44,7 @@ export function ActionButtons({ recipe }: ActionButtonsProps) {
             : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
         }`}
       >
-        {savedStatus === 'made' ? '✓ Hecha' : 'La hice'}
+        {savedStatus === 'made' ? `✓ ${t('made')}` : t('markAsMade')}
       </button>
     </div>
   );

@@ -1,0 +1,29 @@
+{
+  "title": "Sofrito",
+  "subtitle": "Encuentra la receta perfecta",
+  "myRecipes": "Ver mis recetas →",
+  "searchPlaceholder": "¿Qué quieres cocinar hoy?",
+  "searchButton": "Buscar",
+  "searching": "Buscando receta...",
+  "save": "Guardar",
+  "saved": "Guardada",
+  "made": "Hecha",
+  "markAsMade": "Marcar como hecho",
+  "tabs": {
+    "all": "Todas",
+    "saved": "Guardadas",
+    "made": "Hechas"
+  },
+  "empty": "No tienes recetas guardadas",
+  "goHome": "Buscar recetas",
+  "ingredients": "Ingredientes",
+  "steps": "Pasos",
+  "servings": "Porciones",
+  "prepTime": "Preparación",
+  "cookTime": "Cocción",
+  "apiNotConfigured": "API no configurada. Añade LLM_API_KEY en Vercel.",
+  "delete": "Eliminar",
+  "notFound": "Receta no encontrada",
+  "back": "Volver al inicio",
+  "backList": "Volver"
+}

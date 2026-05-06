@@ -1,0 +1,15 @@
+import { getRequestConfig } from 'next-intl/server';
+import { routing } from '../routing';
+
+export default getRequestConfig(async ({ requestLocale }) => {
+  const locale = await requestLocale;
+  const safeLocale = locale && routing.locales.includes(locale as typeof routing.locales[number]) 
+    ? locale as typeof routing.locales[number]
+    : routing.defaultLocale;
+
+  return {
+    locale: safeLocale,
+    timeZone: 'America/New_York',
+    messages: (await import(`../i18n/messages/${safeLocale}.json`)).default,
+  };
+});

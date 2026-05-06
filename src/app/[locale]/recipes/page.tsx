@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Recipe, RecipeStatus } from '@/lib/types';
 import { getAllRecipes } from '@/lib/storage';
 import { RecipeCard } from '@/components/RecipeCard';
+import { LangSwitcher } from '@/components/LangSwitcher';
 
 function getCounts(recipes: (Recipe & { status: RecipeStatus })[]) {
   return {
@@ -15,14 +17,12 @@ function getCounts(recipes: (Recipe & { status: RecipeStatus })[]) {
 }
 
 export default function RecipesPage() {
+  const t = useTranslations();
   const [activeTab, setActiveTab] = useState<RecipeStatus | 'all'>('all');
   const [recipes, setRecipes] = useState<(Recipe & { status: RecipeStatus })[]>([]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Safe: Initializing client-side state from localStorage
-      // localStorage is only available in browser, not on server
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRecipes(getAllRecipes());
     }
   }, [activeTab]);
@@ -31,9 +31,9 @@ export default function RecipesPage() {
   const filtered = activeTab === 'all' ? recipes : recipes.filter(r => r.status === activeTab);
 
   const tabs: { key: string; label: string }[] = [
-    { key: 'all', label: `Todas (${counts.all})` },
-    { key: 'saved', label: `Guardadas (${counts.saved})` },
-    { key: 'made', label: `Hechas (${counts.made})` },
+    { key: 'all', label: `${t('tabs.all')} (${counts.all})` },
+    { key: 'saved', label: `${t('tabs.saved')} (${counts.saved})` },
+    { key: 'made', label: `${t('tabs.made')} (${counts.made})` },
   ].filter(tab => counts[tab.key as keyof typeof counts] > 0);
 
   return (
@@ -41,8 +41,9 @@ export default function RecipesPage() {
       <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <div className="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold text-amber-600">
-            Sofrito
+            {t('title')}
           </Link>
+          <LangSwitcher />
         </div>
       </header>
 
@@ -50,10 +51,10 @@ export default function RecipesPage() {
         {recipes.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-zinc-500 dark:text-zinc-400 mb-4">
-              No tienes recetas guardadas todavía.
+              {t('empty')}
             </p>
             <Link href="/" className="text-amber-600 hover:text-amber-700 font-medium">
-              Busca una receta →
+              {t('goHome')}
             </Link>
           </div>
         ) : (

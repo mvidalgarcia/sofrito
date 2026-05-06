@@ -1,0 +1,29 @@
+{
+  "title": "Sofrito",
+  "subtitle": "Find the perfect recipe",
+  "myRecipes": "View my recipes →",
+  "searchPlaceholder": "What do you want to cook today?",
+  "searchButton": "Search",
+  "searching": "Searching for recipe...",
+  "save": "Save",
+  "saved": "Saved",
+  "made": "Made",
+  "markAsMade": "Mark as made",
+  "tabs": {
+    "all": "All",
+    "saved": "Saved",
+    "made": "Made"
+  },
+  "empty": "You don't have any saved recipes",
+  "goHome": "Search recipes",
+  "ingredients": "Ingredients",
+  "steps": "Steps",
+  "servings": "Servings",
+  "prepTime": "Prep time",
+  "cookTime": "Cook time",
+  "apiNotConfigured": "API not configured. Add LLM_API_KEY in Vercel.",
+  "delete": "Delete",
+  "notFound": "Recipe not found",
+  "back": "Back to home",
+  "backList": "Back"
+}
