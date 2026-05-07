@@ -9,7 +9,6 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "pre-commit": "npm run typecheck && npm run lint",
-    "pre-push": "npm run build",
     "prepare": "husky"
   },
   "dependencies": {
