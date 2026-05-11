@@ -200,7 +200,7 @@ MIT
 
 ---
 
-### 3. Share recipe by link
+### 3. Share recipe by link (IMPLEMENTED)
 
 **Description**: Generate a shareable URL containing recipe metadata. When opened, users can view and save the recipe.
 
@@ -211,4 +211,111 @@ MIT
 - Add "Save" button on share page
 - Keep URL short by minimizing JSON keys
 
+**Status**: ✅ Implemented - works but URLs are too long for WhatsApp
+
+---
+
+### 4. Share via Vercel KV (short URLs)
+
+**Problem**: Current URL-based sharing encodes full recipe (~800-2000 chars), breaks on WhatsApp and doesn't work across devices.
+
+**Solution**: Use Vercel KV (Upstash Redis) to store recipes server-side with short IDs.
+
+**Implementation**:
+
+1. **Create Vercel KV**
+   - Dashboard → Storage → Create KV Database (Upstash Redis, free tier)
+   - Copy `KV_REST_API_URL` and `KV_REST_API_TOKEN`
+
+2. **Environment Variables**
+   ```
+   KV_REST_API_URL=your-kv-url
+   KV_REST_API_TOKEN=your-kv-token
+   ```
+
+3. **Add API endpoints** (`/api/share`)
+   - `POST`: Receives recipe → stores in Redis with short ID → returns ID
+   - `GET`: Fetches recipe by ID from Redis
+
+4. **Update share flow**
+   - User clicks "Share" → POST to `/api/share` → get short ID
+   - Share URL: `.../[locale]/share?id=abc123` (tiny!)
+   - Open link → GET from `/api/share` → fetch and display recipe
+
+5. **Cleanup**: Set TTL of 30 days for shared recipes
+
+**Future-Proofing for Auth**:
+
+```
+# Current (anonymous)
+share:{shortId} -> recipe JSON
+
+# Future (with auth)
+user:{userId}:shares:{shortId} -> recipe JSON
+```
+
+When adding auth later, migrate from global to user-specific keys. Same Redis structure, just different namespace.
+
 **Complexity**: Medium
+
+---
+
+### 5. Auth + Database (Vercel Postgres)
+
+**Goal**: Add user accounts so recipes persist across devices and are tied to users.
+
+**Stack**:
+- **Database**: Vercel Postgres (Neon) - 512MB free
+- **ORM**: Prisma or Drizzle
+- **Auth**: Clerk (easier) or NextAuth (more control)
+
+**Schema (Prisma)**:
+
+```prisma
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  recipes   Recipe[]
+  createdAt DateTime @default(now())
+}
+
+model Recipe {
+  id          String   @id
+  name        String
+  ingredients Json
+  steps       String[]
+  servings    Int
+  prepTime    String
+  cookTime    String
+  status      String   @default("saved")  // "saved" | "made"
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+}
+```
+
+**Implementation**:
+
+1. **Setup**
+   - Create Vercel Postgres database
+   - Add `POSTGRES_URL` environment variable
+   - Set up Prisma schema
+
+2. **Auth Integration**
+   - Add Clerk/NextAuth
+   - Create auth middleware to protect routes
+   - Add sign-in/sign-up UI
+
+3. **Data Migration**
+   - Import existing localStorage recipes to new user account
+   - Migrate share keys from `share:X` to `user:X:shares:X`
+
+4. **Update Routes**
+   - Replace localStorage with DB queries
+   - Add user-scoped recipe queries
+
+**Free Tier Limits**:
+- Vercel Postgres: 512MB storage (~100k recipes)
+- Clerk: 100 monthly active users free
+
+**Complexity**: High
