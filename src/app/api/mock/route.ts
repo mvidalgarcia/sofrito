@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { generateId } from '@/lib/id';
 
 const MOCK_RECIPES = [
   {
@@ -139,17 +140,14 @@ const MOCK_RECIPES = [
   }
 ];
 
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const mock = searchParams.get('mock');
   const index = parseInt(mock || '0', 10);
+  const recipe = MOCK_RECIPES[index % MOCK_RECIPES.length];
   
   return NextResponse.json({
-    ...MOCK_RECIPES[index % MOCK_RECIPES.length],
-    id: generateId(),
+    ...recipe,
+    id: generateId(recipe.name),
   });
 }

@@ -41,7 +41,7 @@ export default function Home() {
       if (!res.ok) {
         throw new Error(data.error || tError("apiNotConfigured"));
       }
-      setRecipe({ ...data, id: generateId(), searchQuery });
+      setRecipe({ ...data, id: generateId(data.name), searchQuery });
     } catch (err) {
       setError(err instanceof Error ? err.message : tError("apiNotConfigured"));
     } finally {

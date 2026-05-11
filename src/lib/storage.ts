@@ -11,7 +11,7 @@ export function saveRecipe(recipe: Recipe, status: RecipeStatus): void {
     localStorage.setItem(key, JSON.stringify(updated));
   } else {
     const updated = [
-      { ...recipe, id: recipe.id || generateId(), createdAt: new Date().toISOString(), status },
+      { ...recipe, id: recipe.id || generateId(recipe.name), createdAt: new Date().toISOString(), status },
       ...existing,
     ].slice(0, 100);
     localStorage.setItem(key, JSON.stringify(updated));
