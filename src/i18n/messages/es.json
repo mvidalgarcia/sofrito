@@ -25,5 +25,7 @@
   "delete": "Eliminar",
   "notFound": "Receta no encontrada",
   "back": "Volver al inicio",
-  "backList": "Volver"
+  "backList": "Volver",
+  "share": "Compartir",
+  "copied": "Copiado"
 }

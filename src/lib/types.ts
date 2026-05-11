@@ -14,6 +14,7 @@ export interface Recipe {
   searchQuery?: string;
   createdAt?: string;
   status?: RecipeStatus;
+  locale?: string;
 }
 
 export type RecipeStatus = 'saved' | 'made';

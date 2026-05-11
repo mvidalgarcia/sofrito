@@ -25,5 +25,7 @@
   "delete": "Delete",
   "notFound": "Recipe not found",
   "back": "Back to home",
-  "backList": "Back"
+  "backList": "Back",
+  "share": "Share",
+  "copied": "Copied"
 }
