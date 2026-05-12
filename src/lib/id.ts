@@ -1,5 +1,6 @@
 export function cyrb53(str: string, seed = 0): string {
-  let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+  let h1 = 0xdeadbeef ^ seed,
+    h2 = 0x41c6ce57 ^ seed;
   for (let i = 0; i < str.length; i++) {
     h1 = Math.imul(h1 ^ str.charCodeAt(i), 2654435761);
     h2 = Math.imul(h2 ^ str.charCodeAt(i), 1597334677);

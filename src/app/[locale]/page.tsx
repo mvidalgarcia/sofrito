@@ -32,9 +32,7 @@ export default function Home() {
       const res = await fetch(url, {
         method: isMock ? "GET" : "POST",
         headers: isMock ? {} : { "Content-Type": "application/json" },
-        body: isMock
-          ? undefined
-          : JSON.stringify({ query: searchQuery, locale }),
+        body: isMock ? undefined : JSON.stringify({ query: searchQuery, locale }),
       });
 
       const data = await res.json();
@@ -50,22 +48,15 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">
-      <header className="max-w-3xl mx-auto px-4 py-4 flex justify-end">
+    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
+      <header className="mx-auto flex max-w-3xl justify-end px-4 py-4">
         <LangSwitcher />
       </header>
-      <main className="max-w-3xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
-            {t("title")}
-          </h1>
-          <p className="text-zinc-600 dark:text-zinc-400 mb-4">
-            {t("subtitle")}
-          </p>
-          <Link
-            href="/recipes"
-            className="text-amber-600 hover:text-amber-700 text-sm font-medium"
-          >
+      <main className="mx-auto max-w-3xl px-4 py-16">
+        <div className="mb-12 text-center">
+          <h1 className="mb-2 text-4xl font-bold text-zinc-900 dark:text-zinc-50">{t("title")}</h1>
+          <p className="mb-4 text-zinc-600 dark:text-zinc-400">{t("subtitle")}</p>
+          <Link href="/recipes" className="text-sm font-medium text-amber-600 hover:text-amber-700">
             {t("myRecipes")}
           </Link>
         </div>
@@ -78,17 +69,15 @@ export default function Home() {
         />
 
         {error && (
-          <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg mb-4">
+          <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
             {error}
           </div>
         )}
 
         {loading && (
           <div className="flex flex-col items-center justify-center py-12">
-            <div className="w-10 h-10 border-4 border-amber-200 border-t-amber-600 rounded-full animate-spin mb-4"></div>
-            <div className="text-lg text-zinc-600 dark:text-zinc-400">
-              {t("searching")}
-            </div>
+            <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-amber-200 border-t-amber-600"></div>
+            <div className="text-lg text-zinc-600 dark:text-zinc-400">{t("searching")}</div>
           </div>
         )}
 

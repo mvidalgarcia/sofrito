@@ -17,4 +17,4 @@ export interface Recipe {
   locale?: string;
 }
 
-export type RecipeStatus = 'saved' | 'made';
+export type RecipeStatus = "saved" | "made";

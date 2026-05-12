@@ -1,29 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
 
 function getClient() {
   const apiKey = process.env.LLM_API_KEY;
   if (!apiKey) {
-    throw new Error('LLM_API_KEY not configured');
+    throw new Error("LLM_API_KEY not configured");
   }
   return new OpenAI({
     apiKey,
-    baseURL: process.env.LLM_BASE_URL || 'https://opencode.ai/zen/v1',
+    baseURL: process.env.LLM_BASE_URL || "https://opencode.ai/zen/v1",
   });
 }
 
 const LANG_CONFIG = {
   es: {
-    instruction: 'ALWAYS respond in Spanish',
-    exampleName: 'Nombre de la receta',
-    exampleItem: 'ingrediente',
-    exampleStep: 'paso 1',
+    instruction: "ALWAYS respond in Spanish",
+    exampleName: "Nombre de la receta",
+    exampleItem: "ingrediente",
+    exampleStep: "paso 1",
   },
   en: {
-    instruction: 'ALWAYS respond in English',
-    exampleName: 'Recipe Name',
-    exampleItem: 'ingredient',
-    exampleStep: 'step 1',
+    instruction: "ALWAYS respond in English",
+    exampleName: "Recipe Name",
+    exampleItem: "ingredient",
+    exampleStep: "step 1",
   },
 };
 
@@ -50,15 +50,15 @@ Strict rules:
 }
 
 export async function POST(request: NextRequest) {
-  const { query, locale = 'es' } = await request.json();
+  const { query, locale = "es" } = await request.json();
 
-  if (!query || typeof query !== 'string') {
-    return NextResponse.json({ error: 'Query required' }, { status: 400 });
+  if (!query || typeof query !== "string") {
+    return NextResponse.json({ error: "Query required" }, { status: 400 });
   }
 
-  const safeLocale = locale === 'en' ? 'en' : 'es';
+  const safeLocale = locale === "en" ? "en" : "es";
   const prompt = buildPrompt(safeLocale);
-  const model = process.env.LLM_MODEL || 'big-pickle';
+  const model = process.env.LLM_MODEL || "big-pickle";
 
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -66,15 +66,15 @@ export async function POST(request: NextRequest) {
       const response = await client.chat.completions.create({
         model,
         messages: [
-          { role: 'system', content: prompt },
-          { role: 'user', content: query },
+          { role: "system", content: prompt },
+          { role: "user", content: query },
         ],
         temperature: 0.7,
         max_tokens: 2048,
       });
 
       const content = response.choices[0].message.content?.trim();
-      if (!content || content === '') {
+      if (!content || content === "") {
         continue;
       }
 
@@ -89,8 +89,13 @@ export async function POST(request: NextRequest) {
       const msg = err instanceof Error ? err.message : String(err);
       console.error(`Attempt ${attempt}/3 failed:`, msg);
 
-      if (msg.includes('API key') || msg.includes('apiKey')) {
-        return NextResponse.json({ error: 'API not configured. Please add LLM_API_KEY in Vercel settings.' }, { status: 500 });
+      if (msg.includes("API key") || msg.includes("apiKey")) {
+        return NextResponse.json(
+          {
+            error: "API not configured. Please add LLM_API_KEY in Vercel settings.",
+          },
+          { status: 500 },
+        );
       }
 
       if (attempt === 3) {
@@ -99,5 +104,5 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ error: 'Max retries reached' }, { status: 500 });
+  return NextResponse.json({ error: "Max retries reached" }, { status: 500 });
 }

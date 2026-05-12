@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { IntlProvider } from 'next-intl';
-import { ReactNode } from 'react';
+import { IntlProvider } from "next-intl";
+import { ReactNode } from "react";
 
 export function I18nProvider({
   children,

@@ -228,6 +228,7 @@ MIT
    - Copy `KV_REST_API_URL` and `KV_REST_API_TOKEN`
 
 2. **Environment Variables**
+
    ```
    KV_REST_API_URL=your-kv-url
    KV_REST_API_TOKEN=your-kv-token
@@ -265,6 +266,7 @@ When adding auth later, migrate from global to user-specific keys. Same Redis st
 **Goal**: Add user accounts so recipes persist across devices and are tied to users.
 
 **Stack**:
+
 - **Database**: Vercel Postgres (Neon) - 512MB free
 - **ORM**: Prisma or Drizzle
 - **Auth**: Clerk (easier) or NextAuth (more control)
@@ -315,6 +317,7 @@ model Recipe {
    - Add user-scoped recipe queries
 
 **Free Tier Limits**:
+
 - Vercel Postgres: 512MB storage (~100k recipes)
 - Clerk: 100 monthly active users free
 

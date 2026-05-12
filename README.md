@@ -37,13 +37,13 @@ LLM_MODEL=big-pickle
 
 ### Supported LLM Providers
 
-| Provider | baseURL | Model | Notes |
-|----------|---------|-------|-------|
-| OpenCode Zen (default) | `https://opencode.ai/zen/v1` | `big-pickle` | Free, unlimited |
-| MiniMax | `https://api.minimax.io/v1` | `MiniMax-M2.5` | Requires account |
-| Hypereal | `https://hypereal.tech/api/v1` | `minimax-m2.5` | 35 free credits |
-| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` | Paid |
-| Anthropic | `https://api.anthropic.com` | `claude-3-haiku` | Paid |
+| Provider               | baseURL                        | Model            | Notes            |
+| ---------------------- | ------------------------------ | ---------------- | ---------------- |
+| OpenCode Zen (default) | `https://opencode.ai/zen/v1`   | `big-pickle`     | Free, unlimited  |
+| MiniMax                | `https://api.minimax.io/v1`    | `MiniMax-M2.5`   | Requires account |
+| Hypereal               | `https://hypereal.tech/api/v1` | `minimax-m2.5`   | 35 free credits  |
+| OpenAI                 | `https://api.openai.com/v1`    | `gpt-4o-mini`    | Paid             |
+| Anthropic              | `https://api.anthropic.com`    | `claude-3-haiku` | Paid             |
 
 ## Tech Stack
 

@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { generateId } from '@/lib/id';
+import { NextResponse } from "next/server";
+import { generateId } from "@/lib/id";
 
 const MOCK_RECIPES = [
   {
@@ -15,7 +15,7 @@ const MOCK_RECIPES = [
       { item: "azafrán", amount: "unas hebras" },
       { item: "aceite de oliva", amount: "50 ml" },
       { item: "agua", amount: "800 ml" },
-      { item: "sal", amount: "al gusto" }
+      { item: "sal", amount: "al gusto" },
     ],
     steps: [
       "Calienta el aceite en una paella.",
@@ -24,11 +24,11 @@ const MOCK_RECIPES = [
       "Agrega el tomate rallado y el pimentón.",
       "Vierte el agua y las hebras de azafrán. Lleva a ebullición.",
       "Añade el arroz y cocina a fuego medio durante 18 minutos.",
-      "Deja reposar 5 minutos antes de servir."
+      "Deja reposar 5 minutos antes de servir.",
     ],
     servings: 4,
     prepTime: "20 min",
-    cookTime: "40 min"
+    cookTime: "40 min",
   },
   {
     name: "Arroz con Marisco",
@@ -44,7 +44,7 @@ const MOCK_RECIPES = [
       { item: "tomate", amount: "1 rallado" },
       { item: "pimiento rojo", amount: "1" },
       { item: "caldo de pescado", amount: "4 tazas" },
-      { item: "perejil", amount: "al gusto" }
+      { item: "perejil", amount: "al gusto" },
     ],
     steps: [
       "Prepara el caldo de pescado y mantenlo caliente.",
@@ -53,11 +53,11 @@ const MOCK_RECIPES = [
       "Añade el tomate y cocina 3 minutos.",
       "Vierte el arroz y mezcla bien.",
       "Añade el caldo caliente y el marisco.",
-      "Cocina 15 minutos y sirve con perejil."
+      "Cocina 15 minutos y sirve con perejil.",
     ],
     servings: 4,
     prepTime: "20 min",
-    cookTime: "30 min"
+    cookTime: "30 min",
   },
   {
     name: "Tacos al Pastor",
@@ -73,7 +73,7 @@ const MOCK_RECIPES = [
       { item: "tortillas de maíz", amount: "8" },
       { item: "cilantro fresco", amount: "1/2 taza" },
       { item: "cebolla", amount: "1/2 taza" },
-      { item: "limón", amount: "2" }
+      { item: "limón", amount: "2" },
     ],
     steps: [
       "Hidrata los chiles en agua caliente.",
@@ -82,11 +82,11 @@ const MOCK_RECIPES = [
       "Ase la carne y la piña a fuego alto.",
       "Calienta las tortillas.",
       "Pica la carne y sirve en tortillas.",
-      "Decora con cilantro, cebolla y limón."
+      "Decora con cilantro, cebolla y limón.",
     ],
     servings: 4,
     prepTime: "30 min",
-    cookTime: "15 min"
+    cookTime: "15 min",
   },
   {
     name: "Pasta Carbonara",
@@ -96,7 +96,7 @@ const MOCK_RECIPES = [
       { item: "huevos", amount: "4" },
       { item: "queso pecorino", amount: "100 g" },
       { item: "queso parmesano", amount: "50 g" },
-      { item: "pimienta negra", amount: "al gusto" }
+      { item: "pimienta negra", amount: "al gusto" },
     ],
     steps: [
       "Cocina la pasta al dente.",
@@ -105,11 +105,11 @@ const MOCK_RECIPES = [
       "Mezcla la pasta caliente con el guanciale.",
       "Retira del fuego y añade la mezcla de huevos.",
       "Revuelve rápidamente para crear la salsa.",
-      "Sirve con pimienta negra."
+      "Sirve con pimienta negra.",
     ],
     servings: 4,
     prepTime: "10 min",
-    cookTime: "15 min"
+    cookTime: "15 min",
   },
   {
     name: "Ensalada César",
@@ -123,7 +123,7 @@ const MOCK_RECIPES = [
       { item: "ajo", amount: "2 dientes" },
       { item: "aceite de oliva", amount: "1/2 taza" },
       { item: "limón", amount: "1" },
-      { item: "mostaza", amount: "1 cucharada" }
+      { item: "mostaza", amount: "1 cucharada" },
     ],
     steps: [
       "Ase el pollo y corta en tiras.",
@@ -132,20 +132,20 @@ const MOCK_RECIPES = [
       "Tuesta el pan y córtalo en cubos.",
       "Mezcla la lechuga con el aderezo.",
       "Añade el pollo y el pan.",
-      "Espolvorea parmesano y sirve."
+      "Espolvorea parmesano y sirve.",
     ],
     servings: 4,
     prepTime: "15 min",
-    cookTime: "20 min"
-  }
+    cookTime: "20 min",
+  },
 ];
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const mock = searchParams.get('mock');
-  const index = parseInt(mock || '0', 10);
+  const mock = searchParams.get("mock");
+  const index = parseInt(mock || "0", 10);
   const recipe = MOCK_RECIPES[index % MOCK_RECIPES.length];
-  
+
   return NextResponse.json({
     ...recipe,
     id: generateId(recipe.name),

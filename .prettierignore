@@ -1,0 +1,6 @@
+.next
+.agents
+out
+build
+node_modules
+next-env.d.ts

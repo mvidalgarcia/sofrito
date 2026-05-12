@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { useEffect, useState, Suspense } from 'react';
-import { useTranslations } from 'next-intl';
-import { Recipe, RecipeStatus } from '@/lib/types';
-import { getRecipeById } from '@/lib/storage';
-import { RecipeDetail } from '@/components/RecipeDetail';
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useEffect, useState, Suspense } from "react";
+import { useTranslations } from "next-intl";
+import { Recipe, RecipeStatus } from "@/lib/types";
+import { getRecipeById } from "@/lib/storage";
+import { RecipeDetail } from "@/components/RecipeDetail";
 
 function RecipeContent() {
   const t = useTranslations();
   const searchParams = useSearchParams();
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
   const [recipe, setRecipe] = useState<(Recipe & { status: RecipeStatus }) | null>(null);
 
   useEffect(() => {
-    if (id && typeof window !== 'undefined') {
+    if (id && typeof window !== "undefined") {
       const found = getRecipeById(id);
       if (found) {
         setRecipe(found);
@@ -25,12 +25,12 @@ function RecipeContent() {
 
   if (!recipe) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">
-        <main className="max-w-3xl mx-auto px-4 py-16">
+      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
+        <main className="mx-auto max-w-3xl px-4 py-16">
           <div className="text-center">
-            <p className="text-zinc-500 dark:text-zinc-400 mb-4">{t('notFound')}</p>
-            <Link href="/" className="text-amber-600 hover:text-amber-700 font-medium">
-              ← {t('back')}
+            <p className="mb-4 text-zinc-500 dark:text-zinc-400">{t("notFound")}</p>
+            <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
+              ← {t("back")}
             </Link>
           </div>
         </main>
@@ -39,16 +39,16 @@ function RecipeContent() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">
-      <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="max-w-3xl mx-auto px-4 py-4">
-          <Link href="/recipes" className="text-amber-600 hover:text-amber-700 font-medium">
-            ← {t('backList')}
+    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
+      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="mx-auto max-w-3xl px-4 py-4">
+          <Link href="/recipes" className="font-medium text-amber-600 hover:text-amber-700">
+            ← {t("backList")}
           </Link>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-8">
+      <main className="mx-auto max-w-3xl px-4 py-8">
         <RecipeDetail recipe={recipe} />
       </main>
     </div>

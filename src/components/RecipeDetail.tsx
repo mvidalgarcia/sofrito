@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useTranslations } from 'next-intl';
-import { Recipe } from '@/lib/types';
-import { ActionButtons } from './ActionButtons';
-import { useState } from 'react';
+import { useTranslations } from "next-intl";
+import { Recipe } from "@/lib/types";
+import { ActionButtons } from "./ActionButtons";
+import { useState } from "react";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -18,43 +18,47 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
   const handleShare = async () => {
     setSharing(true);
     try {
-      const res = await fetch('/api/share', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(recipe),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      const pathParts = window.location.pathname.split('/').filter(Boolean);
-      const locale = pathParts[0] || 'es';
+      const pathParts = window.location.pathname.split("/").filter(Boolean);
+      const locale = pathParts[0] || "es";
       const url = `${window.location.origin}/${locale}/share?id=${data.id}`;
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
-      console.error('Share failed:', e);
+      console.error("Share failed:", e);
     } finally {
       setSharing(false);
     }
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 mb-4">
-        {recipe.name}
-      </h2>
+    <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-900">
+      <h2 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-zinc-100">{recipe.name}</h2>
 
-      <div className="flex gap-4 text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-        <span>🍽️ {recipe.servings} {t('servings')}</span>
-        <span>⏱️ {t('prepTime')}: {recipe.prepTime}</span>
-        <span>🔥 {t('cookTime')}: {recipe.cookTime}</span>
+      <div className="mb-6 flex gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+        <span>
+          🍽️ {recipe.servings} {t("servings")}
+        </span>
+        <span>
+          ⏱️ {t("prepTime")}: {recipe.prepTime}
+        </span>
+        <span>
+          🔥 {t("cookTime")}: {recipe.cookTime}
+        </span>
       </div>
 
       <div className="mb-6">
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
-          {t('ingredients')}
+        <h3 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          {t("ingredients")}
         </h3>
-        <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
           {recipe.ingredients.map((ing, i) => (
             <li key={i} className="text-zinc-700 dark:text-zinc-300">
               • {ing.amount} {ing.item}
@@ -64,13 +68,13 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
-          {t('steps')}
+        <h3 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          {t("steps")}
         </h3>
         <ol className="space-y-3">
           {recipe.steps.map((step, i) => (
             <li key={i} className="flex gap-3 text-zinc-700 dark:text-zinc-300">
-              <span className="flex-shrink-0 w-6 h-6 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 rounded-full flex items-center justify-center text-sm font-medium">
+              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                 {i + 1}
               </span>
               {step}
@@ -82,12 +86,12 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
       <ActionButtons recipe={recipe} />
 
       {showShareButton && (
-        <div className="mt-6 pt-6 border-t border-zinc-200 dark:border-zinc-700">
+        <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
           <button
             onClick={handleShare}
-            className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg transition-colors text-sm"
+            className="flex items-center gap-2 rounded-lg bg-zinc-100 px-4 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
           >
-            {sharing ? '...' : copied ? '✓ ' + t('copied') : '🔗 ' + t('share')}
+            {sharing ? "..." : copied ? "✓ " + t("copied") : "🔗 " + t("share")}
           </button>
         </div>
       )}

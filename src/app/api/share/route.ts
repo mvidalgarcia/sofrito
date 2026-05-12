@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Redis } from '@upstash/redis';
-import { cyrb53 } from '@/lib/id';
+import { NextRequest, NextResponse } from "next/server";
+import { Redis } from "@upstash/redis";
+import { cyrb53 } from "@/lib/id";
 
 function getRedis() {
   const url = process.env.KV_REST_API_URL;
@@ -14,7 +14,7 @@ function getRedis() {
 export async function POST(request: NextRequest) {
   const redis = getRedis();
   if (!redis) {
-    return NextResponse.json({ error: 'KV not configured' }, { status: 500 });
+    return NextResponse.json({ error: "KV not configured" }, { status: 500 });
   }
 
   const recipe = await request.json();
@@ -31,21 +31,21 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const redis = getRedis();
   if (!redis) {
-    return NextResponse.json({ error: 'KV not configured' }, { status: 500 });
+    return NextResponse.json({ error: "KV not configured" }, { status: 500 });
   }
 
   const { searchParams } = new URL(request.url);
-  const id = searchParams.get('id');
+  const id = searchParams.get("id");
 
   if (!id) {
-    return NextResponse.json({ error: 'Missing id' }, { status: 400 });
+    return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
   const data = await redis.get(`share:${id}`);
   if (!data) {
-    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const recipe = typeof data === 'string' ? JSON.parse(data) : data;
+  const recipe = typeof data === "string" ? JSON.parse(data) : data;
   return NextResponse.json(recipe);
 }
