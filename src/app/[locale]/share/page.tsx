@@ -5,42 +5,40 @@ import Link from 'next/link';
 import { useEffect, useState, Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import { Recipe } from '@/lib/types';
+import { generateId } from '@/lib/id';
 import { saveRecipe } from '@/lib/storage';
 import { RecipeDetail } from '@/components/RecipeDetail';
-
-function decodeRecipe(encoded: string): Recipe {
-  const decoded = JSON.parse(decodeURIComponent(atob(encoded)));
-  return {
-    id: crypto.randomUUID(),
-    name: decoded.n,
-    ingredients: decoded.i.split('|').map((pair: string) => {
-      const [item, amount] = pair.split(':');
-      return { item, amount };
-    }),
-    steps: decoded.s,
-    servings: decoded.v,
-    prepTime: decoded.p,
-    cookTime: decoded.c,
-  };
-}
 
 function ShareContent() {
   const t = useTranslations();
   const searchParams = useSearchParams();
-  const encoded = searchParams.get('r');
+  const id = searchParams.get('id');
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (encoded) {
-      try {
-        const decoded = decodeRecipe(encoded);
-        setRecipe(decoded);
-      } catch (e) {
-        console.error('Failed to decode recipe:', e);
-      }
+    if (!id) {
+      setLoading(false);
+      setError(true);
+      return;
     }
-  }, [encoded]);
+
+    fetch(`/api/share?id=${id}`)
+      .then((res) => {
+        if (!res.ok) throw new Error('Not found');
+        return res.json();
+      })
+      .then((data) => {
+        setRecipe({ ...data, id: generateId(data.name) });
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
+        setLoading(false);
+      });
+  }, [id]);
 
   const handleSave = () => {
     if (recipe) {
@@ -49,7 +47,17 @@ function ShareContent() {
     }
   };
 
-  if (!recipe) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">
+        <main className="max-w-3xl mx-auto px-4 py-16 text-center text-zinc-500 dark:text-zinc-400">
+          Loading...
+        </main>
+      </div>
+    );
+  }
+
+  if (error || !recipe) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 font-sans">
         <main className="max-w-3xl mx-auto px-4 py-16">

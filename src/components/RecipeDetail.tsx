@@ -10,31 +10,32 @@ interface RecipeDetailProps {
   showShareButton?: boolean;
 }
 
-function encodeRecipe(recipe: Recipe): string {
-  const minified = {
-    n: recipe.name,
-    i: recipe.ingredients.map((ing) => `${ing.item}:${ing.amount}`).join('|'),
-    s: recipe.steps,
-    v: recipe.servings,
-    p: recipe.prepTime,
-    c: recipe.cookTime,
-  };
-  return btoa(encodeURIComponent(JSON.stringify(minified)));
-}
-
 export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailProps) {
   const t = useTranslations();
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
-  const handleShare = () => {
-    const encoded = encodeRecipe(recipe);
-    const pathParts = window.location.pathname.split('/').filter(Boolean);
-    const locale = pathParts[0] || 'es';
-    const url = `${window.location.origin}/${locale}/share?r=${encoded}`;
-    navigator.clipboard.writeText(url).then(() => {
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      const res = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(recipe),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      const locale = pathParts[0] || 'es';
+      const url = `${window.location.origin}/${locale}/share?id=${data.id}`;
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    });
+    } catch (e) {
+      console.error('Share failed:', e);
+    } finally {
+      setSharing(false);
+    }
   };
 
   return (
@@ -86,7 +87,7 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
             onClick={handleShare}
             className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg transition-colors text-sm"
           >
-            {copied ? '✓ ' + t('copied') : '🔗 ' + t('share')}
+            {sharing ? '...' : copied ? '✓ ' + t('copied') : '🔗 ' + t('share')}
           </button>
         </div>
       )}
