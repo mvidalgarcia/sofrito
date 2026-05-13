@@ -89,13 +89,13 @@ LLM_MODEL=big-pickle
 
 ```bash
 # Install
-npm install
+pnpm install
 
 # Development (uses mock data)
-npm run dev
+pnpm run dev
 
 # Production build
-npm run build
+pnpm run build
 ```
 
 ---
@@ -157,7 +157,7 @@ Run tests locally:
 
 ```bash
 npm test        # unit
-npm run e2e     # e2e
+pnpm run e2e     # e2e
 ```
 
 ---
@@ -322,3 +322,44 @@ model Recipe {
 - Clerk: 100 monthly active users free
 
 **Complexity**: High
+
+---
+
+### 6. PWA (Progressive Web App)
+
+**Goal**: Add to homescreen on mobile, hide URL bar, native app feel.
+
+**Implementation**:
+
+1. **Icons**
+   - Generate 192x192 and 512x512 PNGs
+   - Place in `public/icon-192.png` and `public/icon-512.png`
+
+2. **Manifest** — Create `src/app/manifest.ts`:
+
+   ```ts
+   import { MetadataRoute } from "next";
+   export default function manifest(): MetadataRoute.Manifest {
+     return {
+       name: "Sofrito",
+       short_name: "Sofrito",
+       description: "Recipe finder app",
+       display: "standalone",
+       start_url: "/",
+       theme_color: "#d97706",
+       background_color: "#fafafa",
+       icons: [
+         { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
+         { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
+       ],
+     };
+   }
+   ```
+
+3. **Metadata** — Add theme color + apple tags to `layout.tsx`
+
+4. **Service Worker** (future)
+   - Skip for MVP
+   - Can add later for offline support
+
+**Complexity**: Low

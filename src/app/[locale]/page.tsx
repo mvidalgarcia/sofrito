@@ -17,8 +17,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // const isMock = process.env.NODE_ENV === "development";
-  const isMock = false;
+  const isMock = process.env.NODE_ENV === "development";
 
   const handleSearch = async (searchQuery: string) => {
     setLoading(true);

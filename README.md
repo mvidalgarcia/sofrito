@@ -14,10 +14,10 @@ A recipe search app powered by LLMs. Find recipes by ingredients or name, save y
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run in development
-npm run dev
+pnpm run dev
 ```
 
 Open http://localhost:3000 to use the app.

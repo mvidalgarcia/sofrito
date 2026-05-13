@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "pre-commit": "npm run format && npm run typecheck && npm run lint",
+    "pre-commit": "pnpm run format && pnpm run typecheck && pnpm run lint",
     "prepare": "husky"
   },
   "dependencies": {
@@ -21,6 +21,11 @@
     "openai": "^6.35.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core"
+    ]
   },
   "devDependencies": {
     "@swc/helpers": "^0.5.21",

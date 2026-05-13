@@ -11,7 +11,7 @@
 ## Development Workflow
 
 - Run lint + typecheck + build before every commit
-- Run CI checks locally first: `npm run typecheck && npm run lint && npm run build`
+- Run CI checks locally first: `pnpm run typecheck && pnpm run lint && pnpm run build`
 - Use meaningful commit messages with scope prefix (e.g., `fix:`, `feat:`, `docs:`)
 
 ## Code Style
