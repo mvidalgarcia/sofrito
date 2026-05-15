@@ -89,6 +89,7 @@ LLM_MODEL=big-pickle
 # Vercel KV (Upstash Redis) - required for sharing
 KV_REST_API_URL=your-kv-url
 KV_REST_API_TOKEN=your-kv-token
+
 ```
 
 ---
@@ -100,7 +101,7 @@ KV_REST_API_TOKEN=your-kv-token
 | `/api/recipe` | POST   | Search via LLM                |
 | `/api/share`  | POST   | Store recipe in KV, return ID |
 | `/api/share`  | GET    | Fetch shared recipe by ID     |
-| `/api/mock`   | GET    | Dev mode - mock recipes       |
+| `/api/mock`   | GET    | Mock recipes (dev only)    |
 
 ---
 
@@ -149,7 +150,7 @@ src/
 │   └── api/
 │       ├── recipe/route.ts      # LLM search
 │       ├── share/route.ts       # KV-backed share
-│       └── mock/route.ts        # Dev mock data
+│       └── mock/route.ts        # Mock recipes (env-gated)
 ├── components/
 │   ├── ActionButtons.tsx        # Save / Mark as made
 │   ├── I18nProvider.tsx         # Client-side next-intl wrapper
@@ -188,15 +189,7 @@ src/
 
 ## Known Issues / TODO
 
-### 1. Duplicated routing config
-
-`src/proxy.ts` and `src/routing.ts` both define identical `routing` objects. `proxy.ts` should import from `routing.ts`.
-
-### 2. `.env.production` missing KV variables
-
-The production env file only has `LLM_API_KEY`. Without `KV_REST_API_URL` and `KV_REST_API_TOKEN`, sharing will return 500 in production.
-
-### 4. Recipe status overwrites by name, not ID
+### 1. Recipe status overwrites by name, not ID
 
 `saveRecipe()` deduplicates by `r.name === recipe.name`. Different recipes with the same name would overwrite rather than coexist.
 
