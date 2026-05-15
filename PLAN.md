@@ -101,7 +101,7 @@ KV_REST_API_TOKEN=your-kv-token
 | `/api/recipe` | POST   | Search via LLM                |
 | `/api/share`  | POST   | Store recipe in KV, return ID |
 | `/api/share`  | GET    | Fetch shared recipe by ID     |
-| `/api/mock`   | GET    | Mock recipes (dev only)    |
+| `/api/mock`   | GET    | Mock recipes (dev only)       |
 
 ---
 
@@ -189,9 +189,9 @@ src/
 
 ## Known Issues / TODO
 
-### 1. Recipe status overwrites by name, not ID
+### 1. Dynamic user timezone
 
-`saveRecipe()` deduplicates by `r.name === recipe.name`. Different recipes with the same name would overwrite rather than coexist.
+`timeZone` is hardcoded to `Europe/Madrid` in `i18n/request.ts`. For users outside Spain (e.g., English speakers in the Americas), dates could show misleading times. Future improvement: detect timezone via cookie, browser API (`Intl.DateTimeFormat`), or user profile setting.
 
 ---
 

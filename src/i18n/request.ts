@@ -11,5 +11,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
   return {
     locale: safeLocale,
     messages: (await import(`../i18n/messages/${safeLocale}.json`)).default,
+    timeZone: "Europe/Madrid",
   };
 });
