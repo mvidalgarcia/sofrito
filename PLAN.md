@@ -15,9 +15,11 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 | Component  | Technology                | Notes                   |
 | ---------- | ------------------------- | ----------------------- |
 | Framework  | Next.js 16 (App Router)   | React-based, full-stack |
-| Styling    | Tailwind CSS              | Built-in with Next.js   |
+| Styling    | Tailwind CSS v4           | Utility-first           |
 | Storage    | localStorage              | MVP - no auth needed    |
-| LLM        | Big Pickle (OpenCode Zen) | Free, unlimited         |
+| LLM        | OpenAI-compatible API     | Configurable provider   |
+| Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL    |
+| i18n       | next-intl                 | es (default) + en       |
 | Deployment | Vercel                    | Free hobby tier         |
 
 ---
@@ -27,17 +29,21 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 - **Search**: Enter ingredients/recipe name → LLM returns a recipe
 - **Save**: Save recipes you want to cook
 - **Made**: Mark recipes you've cooked
+- **Share**: Short share links via Vercel KV
+- **i18n**: Spanish (default) and English
+- **Dark mode**: System preference-based
 - **Responsive**: Works on mobile and desktop
 
 ---
 
 ## Pages Structure
 
-| Route         | Description            |
-| ------------- | ---------------------- |
-| `/`           | Home page with search  |
-| `/recipes`    | All saved/made recipes |
-| `/recipe?id=` | Recipe detail          |
+| Route                  | Description               |
+| ---------------------- | ------------------------- |
+| `/[locale]`            | Home page with search     |
+| `/[locale]/recipes`    | All saved/made recipes    |
+| `/[locale]/recipe?id=` | Recipe detail             |
+| `/[locale]/share?id=`  | Shared recipe (KV-backed) |
 
 ---
 
@@ -46,20 +52,27 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 ```typescript
 type RecipeStatus = "saved" | "made";
 
+interface Ingredient {
+  item: string;
+  amount: string;
+}
+
 interface Recipe {
   id: string;
   name: string;
-  ingredients: { item: string; amount: string }[];
+  ingredients: Ingredient[];
   steps: string[];
   servings: number;
   prepTime: string;
   cookTime: string;
-  status: RecipeStatus;
-  createdAt: string;
+  searchQuery?: string;
+  createdAt?: string;
+  status?: RecipeStatus;
+  locale?: string;
 }
 ```
 
-Storage key: `sofrito_recipes`
+Storage key: `sofrito_recipes` (localStorage, capped at 100)
 
 ---
 
@@ -72,16 +85,22 @@ LLM_API_KEY=your-api-key-here
 # Optional: LLM provider
 LLM_BASE_URL=https://opencode.ai/zen/v1
 LLM_MODEL=big-pickle
+
+# Vercel KV (Upstash Redis) - required for sharing
+KV_REST_API_URL=your-kv-url
+KV_REST_API_TOKEN=your-kv-token
 ```
 
 ---
 
 ## API Endpoints
 
-| Endpoint      | Method | Description             |
-| ------------- | ------ | ----------------------- |
-| `/api/recipe` | POST   | Search via LLM          |
-| `/api/mock`   | GET    | Dev mode - mock recipes |
+| Endpoint      | Method | Description                   |
+| ------------- | ------ | ----------------------------- |
+| `/api/recipe` | POST   | Search via LLM                |
+| `/api/share`  | POST   | Store recipe in KV, return ID |
+| `/api/share`  | GET    | Fetch shared recipe by ID     |
+| `/api/mock`   | GET    | Dev mode - mock recipes       |
 
 ---
 
@@ -96,6 +115,11 @@ pnpm run dev
 
 # Production build
 pnpm run build
+
+# Checks
+pnpm run typecheck
+pnpm run lint
+pnpm run format
 ```
 
 ---
@@ -115,21 +139,35 @@ pnpm run build
 ```
 src/
 ├── app/
-│   ├── page.tsx           # Home + search
-│   ├── recipes/page.tsx    # Recipe list
-│   ├── recipe/page.tsx    # Recipe detail
+│   ├── globals.css
+│   ├── [locale]/
+│   │   ├── layout.tsx           # Root layout + i18n
+│   │   ├── page.tsx             # Home + search
+│   │   ├── recipes/page.tsx     # Recipe list (tabs)
+│   │   ├── recipe/page.tsx      # Recipe detail (by id)
+│   │   └── share/page.tsx       # Shared recipe view + save
 │   └── api/
-│       ├── recipe/route.ts
-│       └── mock/route.ts
+│       ├── recipe/route.ts      # LLM search
+│       ├── share/route.ts       # KV-backed share
+│       └── mock/route.ts        # Dev mock data
 ├── components/
-│   ├── ActionButtons.tsx
-│   ├── RecipeCard.tsx
-│   ├── RecipeDetail.tsx
-│   └── SearchBar.tsx
-└── lib/
-    ├── types.ts
-    ├── storage.ts
-    └── id.ts
+│   ├── ActionButtons.tsx        # Save / Mark as made
+│   ├── I18nProvider.tsx         # Client-side next-intl wrapper
+│   ├── LangSwitcher.tsx         # ES/EN toggle
+│   ├── RecipeCard.tsx           # Card in recipes list
+│   ├── RecipeDetail.tsx         # Full recipe view
+│   └── SearchBar.tsx            # Search input
+├── i18n/
+│   ├── request.ts               # next-intl config
+│   └── messages/
+│       ├── en.json              # 31 translation keys
+│       └── es.json              # 31 translation keys
+├── lib/
+│   ├── types.ts                 # Recipe, Ingredient, RecipeStatus
+│   ├── storage.ts               # localStorage CRUD
+│   └── id.ts                    # cyrb53 hash + generateId
+├── proxy.ts                     # next-intl middleware
+└── routing.ts                   # Locale routing config
 ```
 
 ---
@@ -140,9 +178,27 @@ src/
 2. ✅ LLM integration with retry logic
 3. ✅ Recipe search + save + made
 4. ✅ Recipe list + detail pages
-5. ✅ Documentation
-6. ⏳ CI/CD (in progress)
-7. ⏳ Tests (future)
+5. ✅ i18n (es/en)
+6. ✅ Share via Vercel KV
+7. ✅ Dark mode
+8. ✅ CI/CD (GitHub Actions + Husky)
+9. ⏳ Tests (future)
+
+---
+
+## Known Issues / TODO
+
+### 1. Duplicated routing config
+
+`src/proxy.ts` and `src/routing.ts` both define identical `routing` objects. `proxy.ts` should import from `routing.ts`.
+
+### 2. `.env.production` missing KV variables
+
+The production env file only has `LLM_API_KEY`. Without `KV_REST_API_URL` and `KV_REST_API_TOKEN`, sharing will return 500 in production.
+
+### 4. Recipe status overwrites by name, not ID
+
+`saveRecipe()` deduplicates by `r.name === recipe.name`. Different recipes with the same name would overwrite rather than coexist.
 
 ---
 
@@ -150,21 +206,13 @@ src/
 
 - **Unit tests**: Test storage helpers, utility functions
 - **Component tests**: Test RecipeCard, RecipeDetail render
-- **E2E tests**: Test search → save → view flow
+- **E2E tests**: Test search → save → view → share flow
 - Use: Vitest + Playwright
-
-Run tests locally:
 
 ```bash
 npm test        # unit
 pnpm run e2e     # e2e
 ```
-
----
-
-## License
-
-MIT
 
 ---
 
@@ -200,68 +248,7 @@ MIT
 
 ---
 
-### 3. Share recipe by link (IMPLEMENTED)
-
-**Description**: Generate a shareable URL containing recipe metadata. When opened, users can view and save the recipe.
-
-**Implementation**:
-
-- Encode recipe data into URL (use compact JSON + base64)
-- Create `/share` route to decode and display recipe
-- Add "Save" button on share page
-- Keep URL short by minimizing JSON keys
-
-**Status**: ✅ Implemented - works but URLs are too long for WhatsApp
-
----
-
-### 4. Share via Vercel KV (short URLs)
-
-**Problem**: Current URL-based sharing encodes full recipe (~800-2000 chars), breaks on WhatsApp and doesn't work across devices.
-
-**Solution**: Use Vercel KV (Upstash Redis) to store recipes server-side with short IDs.
-
-**Implementation**:
-
-1. **Create Vercel KV**
-   - Dashboard → Storage → Create KV Database (Upstash Redis, free tier)
-   - Copy `KV_REST_API_URL` and `KV_REST_API_TOKEN`
-
-2. **Environment Variables**
-
-   ```
-   KV_REST_API_URL=your-kv-url
-   KV_REST_API_TOKEN=your-kv-token
-   ```
-
-3. **Add API endpoints** (`/api/share`)
-   - `POST`: Receives recipe → stores in Redis with short ID → returns ID
-   - `GET`: Fetches recipe by ID from Redis
-
-4. **Update share flow**
-   - User clicks "Share" → POST to `/api/share` → get short ID
-   - Share URL: `.../[locale]/share?id=abc123` (tiny!)
-   - Open link → GET from `/api/share` → fetch and display recipe
-
-5. **Cleanup**: Set TTL of 30 days for shared recipes
-
-**Future-Proofing for Auth**:
-
-```
-# Current (anonymous)
-share:{shortId} -> recipe JSON
-
-# Future (with auth)
-user:{userId}:shares:{shortId} -> recipe JSON
-```
-
-When adding auth later, migrate from global to user-specific keys. Same Redis structure, just different namespace.
-
-**Complexity**: Medium
-
----
-
-### 5. Auth + Database (Vercel Postgres)
+### 3. Auth + Database (Vercel Postgres)
 
 **Goal**: Add user accounts so recipes persist across devices and are tied to users.
 
@@ -289,7 +276,7 @@ model Recipe {
   servings    Int
   prepTime    String
   cookTime    String
-  status      String   @default("saved")  // "saved" | "made"
+  status      String   @default("saved")
   userId      String
   user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
@@ -325,7 +312,7 @@ model Recipe {
 
 ---
 
-### 6. PWA (Progressive Web App)
+### 4. PWA (Progressive Web App)
 
 **Goal**: Add to homescreen on mobile, hide URL bar, native app feel.
 
@@ -363,3 +350,9 @@ model Recipe {
    - Can add later for offline support
 
 **Complexity**: Low
+
+---
+
+## License
+
+MIT

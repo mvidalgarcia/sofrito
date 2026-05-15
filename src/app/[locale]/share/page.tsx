@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Recipe } from "@/lib/types";
 import { generateId } from "@/lib/id";
 import { saveRecipe } from "@/lib/storage";
@@ -11,6 +11,7 @@ import { RecipeDetail } from "@/components/RecipeDetail";
 
 function ShareContent() {
   const t = useTranslations();
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -31,14 +32,14 @@ function ShareContent() {
         return res.json();
       })
       .then((data) => {
-        setRecipe({ ...data, id: generateId(data.name) });
+        setRecipe({ ...data, id: generateId(data.name), locale });
         setLoading(false);
       })
       .catch(() => {
         setError(true);
         setLoading(false);
       });
-  }, [id]);
+  }, [id, locale]);
 
   const handleSave = () => {
     if (recipe) {
