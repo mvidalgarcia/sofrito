@@ -4,9 +4,12 @@ A recipe search app powered by LLMs. Find recipes by ingredients or name, save y
 
 ## Features
 
-- **Smart Search**: Enter any ingredient or recipe name, and an LLM finds the perfect recipe for you
+- **Smart Search**: Search by recipe name or by ingredients — get up to 3 LLM-generated suggestions
 - **Save**: Keep recipes you want to cook
 - **Made**: Mark recipes you've cooked
+- **Share**: Short share links via Vercel KV (clipboard)
+- **i18n**: Spanish (default) and English
+- **Dark mode**: System preference-based
 - **Responsive**: Works on mobile and desktop
 - **Privacy-First**: Your data stays in your browser (localStorage)
 
@@ -24,7 +27,7 @@ Open http://localhost:3000 to use the app.
 
 ## Environment Variables
 
-Create a `.env.local` file:
+Create a `.env` file:
 
 ```env
 # Required - LLM API key
@@ -37,13 +40,14 @@ LLM_MODEL=big-pickle
 
 ### Supported LLM Providers
 
-| Provider               | baseURL                        | Model            | Notes            |
-| ---------------------- | ------------------------------ | ---------------- | ---------------- |
-| OpenCode Zen (default) | `https://opencode.ai/zen/v1`   | `big-pickle`     | Free, unlimited  |
-| MiniMax                | `https://api.minimax.io/v1`    | `MiniMax-M2.5`   | Requires account |
-| Hypereal               | `https://hypereal.tech/api/v1` | `minimax-m2.5`   | 35 free credits  |
-| OpenAI                 | `https://api.openai.com/v1`    | `gpt-4o-mini`    | Paid             |
-| Anthropic              | `https://api.anthropic.com`    | `claude-3-haiku` | Paid             |
+| Provider               | baseURL                          | Model                     | Notes                                   |
+| ---------------------- | -------------------------------- | ------------------------- | --------------------------------------- |
+| Groq (recommended)     | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` | Free, fast, get key at console.groq.com |
+| OpenCode Zen (default) | `https://opencode.ai/zen/v1`     | `big-pickle`              | Free, unlimited                         |
+| MiniMax                | `https://api.minimax.io/v1`      | `MiniMax-M2.5`            | Requires account                        |
+| Hypereal               | `https://hypereal.tech/api/v1`   | `minimax-m2.5`            | 35 free credits                         |
+| OpenAI                 | `https://api.openai.com/v1`      | `gpt-4o-mini`             | Paid                                    |
+| Anthropic              | `https://api.anthropic.com`      | `claude-3-haiku`          | Paid                                    |
 
 ## Tech Stack
 

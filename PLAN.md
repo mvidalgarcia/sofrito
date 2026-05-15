@@ -26,7 +26,8 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 
 ## Features
 
-- **Search**: Enter ingredients/recipe name → LLM returns a recipe
+- **Search by name**: Enter a recipe name → LLM returns a recipe
+- **Search by ingredients**: Enter ingredients → LLM returns up to 3 suggestions
 - **Save**: Save recipes you want to cook
 - **Made**: Mark recipes you've cooked
 - **Share**: Short share links via Vercel KV
@@ -96,12 +97,13 @@ KV_REST_API_TOKEN=your-kv-token
 
 ## API Endpoints
 
-| Endpoint      | Method | Description                   |
-| ------------- | ------ | ----------------------------- |
-| `/api/recipe` | POST   | Search via LLM                |
-| `/api/share`  | POST   | Store recipe in KV, return ID |
-| `/api/share`  | GET    | Fetch shared recipe by ID     |
-| `/api/mock`   | GET    | Mock recipes (dev only)       |
+| Endpoint       | Method | Description                      |
+| -------------- | ------ | -------------------------------- |
+| `/api/recipe`  | POST   | Search via LLM (single recipe)   |
+| `/api/recipes` | POST   | Search via LLM (up to 3 recipes) |
+| `/api/share`   | POST   | Store recipe in KV, return ID    |
+| `/api/share`   | GET    | Fetch shared recipe by ID        |
+| `/api/mock`    | GET    | Mock recipes (dev only)          |
 
 ---
 
@@ -143,26 +145,29 @@ src/
 │   ├── globals.css
 │   ├── [locale]/
 │   │   ├── layout.tsx           # Root layout + i18n
-│   │   ├── page.tsx             # Home + search
+│   │   ├── page.tsx             # Home + search mode toggle
 │   │   ├── recipes/page.tsx     # Recipe list (tabs)
 │   │   ├── recipe/page.tsx      # Recipe detail (by id)
 │   │   └── share/page.tsx       # Shared recipe view + save
 │   └── api/
 │       ├── recipe/route.ts      # LLM search
 │       ├── share/route.ts       # KV-backed share
-│       └── mock/route.ts        # Mock recipes (env-gated)
+│       ├── mock/route.ts        # Mock recipes (env-gated)
+│       └── recipes/route.ts     # Ingredient-based search, returns array
 ├── components/
 │   ├── ActionButtons.tsx        # Save / Mark as made
 │   ├── I18nProvider.tsx         # Client-side next-intl wrapper
+│   ├── IngredientSearch.tsx     # Ingredient search UI + results
 │   ├── LangSwitcher.tsx         # ES/EN toggle
+│   ├── NameSearch.tsx           # Single recipe search UI
 │   ├── RecipeCard.tsx           # Card in recipes list
 │   ├── RecipeDetail.tsx         # Full recipe view
 │   └── SearchBar.tsx            # Search input
 ├── i18n/
 │   ├── request.ts               # next-intl config
 │   └── messages/
-│       ├── en.json              # 31 translation keys
-│       └── es.json              # 31 translation keys
+│       ├── en.json              # 36 translation keys
+│       └── es.json              # 36 translation keys
 ├── lib/
 │   ├── types.ts                 # Recipe, Ingredient, RecipeStatus
 │   ├── storage.ts               # localStorage CRUD
@@ -183,7 +188,8 @@ src/
 6. ✅ Share via Vercel KV
 7. ✅ Dark mode
 8. ✅ CI/CD (GitHub Actions + Husky)
-9. ⏳ Tests (future)
+9. ✅ Ingredient-based search
+10. ⏳ Tests (future)
 
 ---
 
@@ -225,19 +231,22 @@ pnpm run e2e     # e2e
 
 ---
 
-### 2. Ingredient-based search
+### 2. Ingredient-based search (IMPLEMENTED ✅)
 
-**Description**: Allow users to search by ingredients (e.g., "peas", "chicken") and get a list of 3-5 recipe options to browse and save.
+**Description**: Allow users to search by ingredients (e.g., "peas", "chicken") and get a list of up to 3 recipes to browse and save.
 
 **Implementation**:
 
-- Add a new search mode toggle (by dish name vs by ingredients)
-- Update API to return an array of recipes instead of a single recipe
-- Create a new list view component to display multiple recipes
-- Add "save" functionality directly from the list
-- Use `locale` from feature #1 for recipe language
+- Mode toggle on home page (search by name vs by ingredients)
+- Dynamic ingredient input list with add/remove
+- New `/api/recipes` endpoint returning array of recipes
+- Results show mini-cards with Save/Made buttons inline
+- Click to expand full RecipeDetail view
+- Uses locale from search context
 
 **Complexity**: High
+
+**Status**: ✅ Implemented
 
 ---
 

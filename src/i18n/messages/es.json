@@ -27,5 +27,10 @@
   "back": "Volver al inicio",
   "backList": "Volver",
   "share": "Compartir",
-  "copied": "Copiado"
+  "copied": "Copiado",
+  "searchByName": "Buscar por nombre",
+  "searchByIngredients": "Buscar por ingredientes",
+  "ingredientPlaceholder": "Añade un ingrediente",
+  "addIngredient": "Añadir",
+  "suggestedRecipes": "Recetas sugeridas"
 }
