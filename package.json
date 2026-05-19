@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
+    "test:e2e": "playwright test",
     "pre-commit": "pnpm run format && git add -u && pnpm run typecheck && pnpm run lint",
     "prepare": "husky"
   },
@@ -28,6 +29,7 @@
     ]
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@swc/helpers": "^0.5.21",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
