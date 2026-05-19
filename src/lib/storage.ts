@@ -1,8 +1,9 @@
 import { Recipe, RecipeStatus } from "./types";
+import { STORAGE_KEY, MAX_SAVED_RECIPES } from "./constants";
 import { generateId } from "./id";
 
 export function saveRecipe(recipe: Recipe, status: RecipeStatus): void {
-  const key = "sofrito_recipes";
+  const key = STORAGE_KEY;
   const existing: (Recipe & { status: RecipeStatus; createdAt: string })[] = JSON.parse(
     localStorage.getItem(key) || "[]",
   );
@@ -20,13 +21,13 @@ export function saveRecipe(recipe: Recipe, status: RecipeStatus): void {
         status,
       },
       ...existing,
-    ].slice(0, 100);
+    ].slice(0, MAX_SAVED_RECIPES);
     localStorage.setItem(key, JSON.stringify(updated));
   }
 }
 
 export function getAllRecipes(): (Recipe & { status: RecipeStatus; createdAt: string })[] {
-  const key = "sofrito_recipes";
+  const key = STORAGE_KEY;
   return JSON.parse(localStorage.getItem(key) || "[]");
 }
 
@@ -55,7 +56,7 @@ export function getRecipeById(
 }
 
 export function deleteRecipe(id: string): void {
-  const key = "sofrito_recipes";
+  const key = STORAGE_KEY;
   const existing: (Recipe & { status: RecipeStatus })[] = JSON.parse(
     localStorage.getItem(key) || "[]",
   );
@@ -64,7 +65,7 @@ export function deleteRecipe(id: string): void {
 }
 
 export function updateRecipeStatus(id: string, status: RecipeStatus): void {
-  const key = "sofrito_recipes";
+  const key = STORAGE_KEY;
   const existing: (Recipe & { status: RecipeStatus })[] = JSON.parse(
     localStorage.getItem(key) || "[]",
   );

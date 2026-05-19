@@ -32,5 +32,6 @@
   "searchByIngredients": "Buscar por ingredientes",
   "ingredientPlaceholder": "Añade un ingrediente",
   "addIngredient": "Añadir",
-  "suggestedRecipes": "Recetas sugeridas"
+  "suggestedRecipes": "Recetas sugeridas",
+  "servingsInput": "Porciones"
 }

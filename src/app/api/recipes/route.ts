@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
+import {
+  DEFAULT_LOCALE,
+  DEFAULT_SERVINGS,
+  DEFAULT_MODEL,
+  LLM_TEMPERATURE,
+  INGREDIENT_SEARCH_MAX_TOKENS,
+  MAX_RETRIES,
+  DEFAULT_LLM_BASE_URL,
+  MAX_RECIPES,
+} from "@/lib/constants";
 
 function getClient() {
   const apiKey = process.env.LLM_API_KEY;
@@ -8,33 +18,47 @@ function getClient() {
   }
   return new OpenAI({
     apiKey,
-    baseURL: process.env.LLM_BASE_URL || "https://opencode.ai/zen/v1",
+    baseURL: process.env.LLM_BASE_URL || DEFAULT_LLM_BASE_URL,
   });
 }
 
 const LANG_CONFIG: Record<
   string,
-  { instruction: string; exampleName: string; exampleItem: string; exampleStep: string }
+  {
+    instruction: string;
+    exampleName: string;
+    exampleItem: string;
+    exampleAmount: string;
+    exampleStep: string;
+    examplePrepTime: string;
+    exampleCookTime: string;
+  }
 > = {
   es: {
     instruction: "ALWAYS respond in Spanish",
     exampleName: "Nombre de la receta",
     exampleItem: "ingrediente",
+    exampleAmount: "cantidad",
     exampleStep: "paso 1",
+    examplePrepTime: "15 min",
+    exampleCookTime: "30 min",
   },
   en: {
     instruction: "ALWAYS respond in English",
     exampleName: "Recipe Name",
     exampleItem: "ingredient",
+    exampleAmount: "amount",
     exampleStep: "step 1",
+    examplePrepTime: "15 min",
+    exampleCookTime: "30 min",
   },
 };
 
-function buildPrompt(locale: string) {
+function buildPrompt(locale: string, servings: number) {
   const lang = LANG_CONFIG[locale as keyof typeof LANG_CONFIG] || LANG_CONFIG.es;
 
   return `You are an expert chef specializing in international cuisine.
-Suggest up to 3 complete recipes based on the given ingredients.
+Suggest up to 3 complete recipes based on the given ingredients. Scale all ingredient amounts for ${servings} servings.
 
 IMPORTANT:
 - The provided ingredients are a starting point. You can add any other ingredients needed to make great, authentic recipes.
@@ -44,7 +68,7 @@ IMPORTANT:
 - Return up to 3 recipes. If fewer make sense, return fewer.
 
 Format:
-[{"name":"${lang.exampleName}","ingredients":[{"item":"${lang.exampleItem}","amount":"amount"}],"steps":["${lang.exampleStep}"],"servings":4,"prepTime":"15 min","cookTime":"30 min"}]
+[{"name":"${lang.exampleName}","ingredients":[{"item":"${lang.exampleItem}","amount":"${lang.exampleAmount}"}],"steps":["${lang.exampleStep}"],"servings":${servings},"prepTime":"${lang.examplePrepTime}","cookTime":"${lang.exampleCookTime}"}]
 
 Strict rules:
 1. ${lang.instruction}
@@ -57,18 +81,22 @@ Strict rules:
 }
 
 export async function POST(request: NextRequest) {
-  const { ingredients, locale = "es" } = await request.json();
+  const {
+    ingredients,
+    locale = DEFAULT_LOCALE,
+    servings = DEFAULT_SERVINGS,
+  } = await request.json();
 
   if (!Array.isArray(ingredients) || ingredients.length === 0) {
     return NextResponse.json({ error: "At least one ingredient required" }, { status: 400 });
   }
 
   const safeLocale = locale === "en" ? "en" : "es";
-  const prompt = buildPrompt(safeLocale);
-  const model = process.env.LLM_MODEL || "big-pickle";
+  const prompt = buildPrompt(safeLocale, servings);
+  const model = process.env.LLM_MODEL || DEFAULT_MODEL;
   const query = `Suggest recipes using these ingredients as a starting point. Add any other ingredients needed: ${ingredients.join(", ")}`;
 
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const client = getClient();
       const response = await client.chat.completions.create({
@@ -77,8 +105,8 @@ export async function POST(request: NextRequest) {
           { role: "system", content: prompt },
           { role: "user", content: query },
         ],
-        temperature: 0.7,
-        max_tokens: 4096,
+        temperature: LLM_TEMPERATURE,
+        max_tokens: INGREDIENT_SEARCH_MAX_TOKENS,
       });
 
       const content = response.choices[0].message.content?.trim();
@@ -96,10 +124,10 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      return NextResponse.json({ recipes: recipes.slice(0, 3) });
+      return NextResponse.json({ recipes: recipes.slice(0, MAX_RECIPES) });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error(`Attempt ${attempt}/3 failed:`, msg);
+      console.error(`Attempt ${attempt}/${MAX_RETRIES} failed:`, msg);
 
       if (msg.includes("API key") || msg.includes("apiKey")) {
         return NextResponse.json(
@@ -110,7 +138,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (attempt === 3) {
+      if (attempt === MAX_RETRIES) {
         return NextResponse.json({ error: msg }, { status: 500 });
       }
     }

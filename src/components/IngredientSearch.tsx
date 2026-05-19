@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Recipe } from "@/lib/types";
+import { DEFAULT_SERVINGS, MIN_SERVINGS, MAX_SERVINGS } from "@/lib/constants";
 import { generateId } from "@/lib/id";
 import { RecipeDetail } from "@/components/RecipeDetail";
 import { ActionButtons } from "@/components/ActionButtons";
@@ -16,6 +17,7 @@ export function IngredientSearch() {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [servings, setServings] = useState(DEFAULT_SERVINGS);
 
   const handleSearch = async () => {
     const valid = ingredients.filter((i) => i.trim());
@@ -30,7 +32,7 @@ export function IngredientSearch() {
       const res = await fetch("/api/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ingredients: valid, locale }),
+        body: JSON.stringify({ ingredients: valid, locale, servings }),
       });
 
       const data = await res.json();
@@ -100,6 +102,29 @@ export function IngredientSearch() {
             className="ml-auto rounded-lg bg-amber-600 px-6 py-2 font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "..." : t("searchButton")}
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-6 flex items-center gap-3">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          {t("servingsInput")}
+        </label>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setServings(Math.max(MIN_SERVINGS, servings - 1))}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+          >
+            −
+          </button>
+          <span className="flex h-8 w-10 items-center justify-center rounded-lg bg-white text-sm font-semibold text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+            {servings}
+          </span>
+          <button
+            onClick={() => setServings(Math.min(MAX_SERVINGS, servings + 1))}
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+          >
+            +
           </button>
         </div>
       </div>

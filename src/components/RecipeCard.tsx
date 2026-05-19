@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Recipe, RecipeStatus } from "@/lib/types";
 import { deleteRecipe } from "@/lib/storage";
+import { DELETE_ANIMATION_DELAY_MS } from "@/lib/constants";
 import Link from "next/link";
 
 interface RecipeCardProps {
@@ -17,7 +18,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
     setDeleted(true);
-    setTimeout(() => deleteRecipe(recipe.id), 200);
+    setTimeout(() => deleteRecipe(recipe.id), DELETE_ANIMATION_DELAY_MS);
   };
 
   if (deleted) return null;

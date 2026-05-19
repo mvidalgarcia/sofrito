@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Recipe } from "@/lib/types";
+import { DEFAULT_LOCALE, COPY_FEEDBACK_DURATION_MS } from "@/lib/constants";
 import { ActionButtons } from "./ActionButtons";
 import { useState } from "react";
 
@@ -26,11 +27,11 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       const pathParts = window.location.pathname.split("/").filter(Boolean);
-      const locale = pathParts[0] || "es";
+      const locale = pathParts[0] || DEFAULT_LOCALE;
       const url = `${window.location.origin}/${locale}/share?id=${data.id}`;
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION_MS);
     } catch (e) {
       console.error("Share failed:", e);
     } finally {

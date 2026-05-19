@@ -10,7 +10,7 @@
     "typecheck": "tsc --noEmit",
     "format:check": "prettier --check .",
     "format": "prettier --write .",
-    "pre-commit": "pnpm run format && pnpm run typecheck && pnpm run lint",
+    "pre-commit": "pnpm run format && git add -u && pnpm run typecheck && pnpm run lint",
     "prepare": "husky"
   },
   "dependencies": {

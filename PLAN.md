@@ -166,8 +166,8 @@ src/
 ├── i18n/
 │   ├── request.ts               # next-intl config
 │   └── messages/
-│       ├── en.json              # 36 translation keys
-│       └── es.json              # 36 translation keys
+│       ├── en.json              # 37 translation keys
+│       └── es.json              # 37 translation keys
 ├── lib/
 │   ├── types.ts                 # Recipe, Ingredient, RecipeStatus
 │   ├── storage.ts               # localStorage CRUD
@@ -189,7 +189,8 @@ src/
 7. ✅ Dark mode
 8. ✅ CI/CD (GitHub Actions + Husky)
 9. ✅ Ingredient-based search
-10. ⏳ Tests (future)
+10. ✅ Servings adjustment (Comensales)
+11. ⏳ Tests (future)
 
 ---
 
