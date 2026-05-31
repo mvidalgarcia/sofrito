@@ -17,6 +17,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!window.confirm(t("confirmDelete"))) return;
     setDeleted(true);
     setTimeout(() => deleteRecipe(recipe.id), DELETE_ANIMATION_DELAY_MS);
   };
@@ -42,7 +43,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
         </div>
         <button
           onClick={handleDelete}
-          className="p-1 text-zinc-400 transition-colors hover:text-red-500"
+          className="cursor-pointer rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
           title={t("delete")}
         >
           ✕

@@ -1,18 +1,25 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { Recipe, RecipeStatus } from "@/lib/types";
-import { getRecipeById } from "@/lib/storage";
+import { deleteRecipe, getRecipeById } from "@/lib/storage";
 import { RecipeDetail } from "@/components/RecipeDetail";
 
 function RecipeContent() {
   const t = useTranslations();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [recipe, setRecipe] = useState<(Recipe & { status: RecipeStatus }) | null>(null);
+
+  const handleDelete = () => {
+    if (!window.confirm(t("confirmDelete"))) return;
+    if (id) deleteRecipe(id);
+    router.push("/recipes");
+  };
 
   useEffect(() => {
     if (id && typeof window !== "undefined") {
@@ -41,10 +48,16 @@ function RecipeContent() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto max-w-3xl px-4 py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <Link href="/recipes" className="font-medium text-amber-600 hover:text-amber-700">
             ← {t("backList")}
           </Link>
+          <button
+            onClick={handleDelete}
+            className="cursor-pointer rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+          >
+            ✕ {t("delete")}
+          </button>
         </div>
       </header>
 

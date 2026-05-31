@@ -17,9 +17,10 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 | Framework  | Next.js 16 (App Router)   | React-based, full-stack |
 | Styling    | Tailwind CSS v4           | Utility-first           |
 | Storage    | localStorage              | MVP - no auth needed    |
-| LLM        | OpenAI-compatible API     | Configurable provider   |
+| LLM        | OpenAI-compatible API     | Groq (qwen/qwen3-32b)   |
 | Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL    |
 | i18n       | next-intl                 | es (default) + en       |
+| PWA        | Service worker + manifest | Add to homescreen       |
 | Deployment | Vercel                    | Free hobby tier         |
 
 ---
@@ -28,10 +29,12 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 
 - **Search by name**: Enter a recipe name → LLM returns a recipe
 - **Search by ingredients**: Enter ingredients → LLM returns up to 3 suggestions
+- **Servings adjustment**: Set servings (1-12) before searching; ingredients scale in prompt
 - **Save**: Save recipes you want to cook
 - **Made**: Mark recipes you've cooked
 - **Share**: Short share links via Vercel KV
 - **i18n**: Spanish (default) and English
+- **PWA**: Add to homescreen, standalone display, service worker with network-first caching
 - **Dark mode**: System preference-based
 - **Responsive**: Works on mobile and desktop
 
@@ -80,17 +83,16 @@ Storage key: `sofrito_recipes` (localStorage, capped at 100)
 ## Environment Variables
 
 ```env
-# Required - LLM API key
-LLM_API_KEY=your-api-key-here
+# Required - LLM API key (Groq)
+LLM_API_KEY=gsk_your-groq-key-here
 
-# Optional: LLM provider
-LLM_BASE_URL=https://opencode.ai/zen/v1
-LLM_MODEL=big-pickle
+# Optional: LLM provider (Groq)
+LLM_BASE_URL=https://api.groq.com/openai/v1
+LLM_MODEL=qwen/qwen3-32b
 
 # Vercel KV (Upstash Redis) - required for sharing
 KV_REST_API_URL=your-kv-url
 KV_REST_API_TOKEN=your-kv-token
-
 ```
 
 ---
@@ -113,7 +115,7 @@ KV_REST_API_TOKEN=your-kv-token
 # Install
 pnpm install
 
-# Development (uses mock data)
+# Development (uses API by default)
 pnpm run dev
 
 # Production build
@@ -123,17 +125,19 @@ pnpm run build
 pnpm run typecheck
 pnpm run lint
 pnpm run format
+
+# Tests
+pnpm run test:e2e    # e2e with Playwright
 ```
 
 ---
 
 ## LLM Configuration
 
-| Provider               | baseURL                        | Model          |
-| ---------------------- | ------------------------------ | -------------- |
-| OpenCode Zen (default) | `https://opencode.ai/zen/v1`   | `big-pickle`   |
-| MiniMax                | `https://api.minimax.io/v1`    | `MiniMax-M2.5` |
-| Hypereal               | `https://hypereal.tech/api/v1` | `minimax-m2.5` |
+| Provider                | baseURL                          | Model            |
+| ----------------------- | -------------------------------- | ---------------- |
+| Groq (current)          | `https://api.groq.com/openai/v1` | `qwen/qwen3-32b` |
+| OpenCode Zen (fallback) | `https://opencode.ai/zen/v1`     | `big-pickle`     |
 
 ---
 
@@ -144,22 +148,23 @@ src/
 ├── app/
 │   ├── globals.css
 │   ├── [locale]/
-│   │   ├── layout.tsx           # Root layout + i18n
+│   │   ├── layout.tsx           # Root layout + i18n + PWA metadata
 │   │   ├── page.tsx             # Home + search mode toggle
 │   │   ├── recipes/page.tsx     # Recipe list (tabs)
 │   │   ├── recipe/page.tsx      # Recipe detail (by id)
 │   │   └── share/page.tsx       # Shared recipe view + save
 │   └── api/
-│       ├── recipe/route.ts      # LLM search
+│       ├── recipe/route.ts      # LLM search (single, scaled by servings)
 │       ├── share/route.ts       # KV-backed share
 │       ├── mock/route.ts        # Mock recipes (env-gated)
-│       └── recipes/route.ts     # Ingredient-based search, returns array
+│       └── recipes/route.ts     # Ingredient search, array, scaled by servings
 ├── components/
 │   ├── ActionButtons.tsx        # Save / Mark as made
 │   ├── I18nProvider.tsx         # Client-side next-intl wrapper
-│   ├── IngredientSearch.tsx     # Ingredient search UI + results
+│   ├── IngredientSearch.tsx     # Ingredient search UI + servings + results
 │   ├── LangSwitcher.tsx         # ES/EN toggle
-│   ├── NameSearch.tsx           # Single recipe search UI
+│   ├── NameSearch.tsx           # Single recipe search UI + servings
+│   ├── PwaRegister.tsx          # Service worker registration
 │   ├── RecipeCard.tsx           # Card in recipes list
 │   ├── RecipeDetail.tsx         # Full recipe view
 │   └── SearchBar.tsx            # Search input
@@ -169,11 +174,23 @@ src/
 │       ├── en.json              # 37 translation keys
 │       └── es.json              # 37 translation keys
 ├── lib/
+│   ├── constants.ts             # All runtime constants (single source of truth)
 │   ├── types.ts                 # Recipe, Ingredient, RecipeStatus
 │   ├── storage.ts               # localStorage CRUD
 │   └── id.ts                    # cyrb53 hash + generateId
 ├── proxy.ts                     # next-intl middleware
 └── routing.ts                   # Locale routing config
+
+public/
+├── manifest.json                # PWA manifest
+├── icon.svg                     # PWA icon (SVG, maskable)
+└── sw.js                        # Service worker (network-first)
+
+tests/
+└── e2e/
+    └── home.spec.ts             # 4 e2e tests (load, toggle, servings, navigation)
+
+playwright.config.ts             # Playwright config
 ```
 
 ---
@@ -190,7 +207,8 @@ src/
 8. ✅ CI/CD (GitHub Actions + Husky)
 9. ✅ Ingredient-based search
 10. ✅ Servings adjustment (Comensales)
-11. ⏳ Tests (future)
+11. ✅ E2E tests (Playwright, 4 tests)
+12. ✅ PWA (manifest, service worker, register)
 
 ---
 
@@ -202,56 +220,23 @@ src/
 
 ---
 
-## Testing Strategy (Future)
+## Testing Strategy
 
-- **Unit tests**: Test storage helpers, utility functions
-- **Component tests**: Test RecipeCard, RecipeDetail render
-- **E2E tests**: Test search → save → view → share flow
-- Use: Vitest + Playwright
+| Layer           | Status    | Tool       | Notes                    |
+| --------------- | --------- | ---------- | ------------------------ |
+| Unit tests      | ⏳ Future | Vitest     | storage, id, utils       |
+| Component tests | ⏳ Future | Vitest     | RecipeCard, RecipeDetail |
+| E2E tests       | ✅ Done   | Playwright | 4 tests on home page     |
 
 ```bash
-npm test        # unit
-pnpm run e2e     # e2e
+pnpm run test:e2e     # e2e (local or against BASE_URL)
 ```
 
 ---
 
 ## Future Features
 
-### 1. Comensales (servings adjustment)
-
-**Description**: Allow users to specify the number of servings when searching for recipes. The LLM prompt should scale ingredients accordingly.
-
-**Implementation**:
-
-- Add a servings input/dropdown in SearchBar component
-- Pass `servings: X` to the API
-- Update LLM prompt to scale ingredients based on comensales
-
-**Complexity**: Medium
-
----
-
-### 2. Ingredient-based search (IMPLEMENTED ✅)
-
-**Description**: Allow users to search by ingredients (e.g., "peas", "chicken") and get a list of up to 3 recipes to browse and save.
-
-**Implementation**:
-
-- Mode toggle on home page (search by name vs by ingredients)
-- Dynamic ingredient input list with add/remove
-- New `/api/recipes` endpoint returning array of recipes
-- Results show mini-cards with Save/Made buttons inline
-- Click to expand full RecipeDetail view
-- Uses locale from search context
-
-**Complexity**: High
-
-**Status**: ✅ Implemented
-
----
-
-### 3. Auth + Database (Vercel Postgres)
+### 1. Auth + Database (Vercel Postgres)
 
 **Goal**: Add user accounts so recipes persist across devices and are tied to users.
 
@@ -315,42 +300,9 @@ model Recipe {
 
 ---
 
-### 4. PWA (Progressive Web App)
+### 2. Rescale saved recipes
 
-**Goal**: Add to homescreen on mobile, hide URL bar, native app feel.
-
-**Implementation**:
-
-1. **Icons**
-   - Generate 192x192 and 512x512 PNGs
-   - Place in `public/icon-192.png` and `public/icon-512.png`
-
-2. **Manifest** — Create `src/app/manifest.ts`:
-
-   ```ts
-   import { MetadataRoute } from "next";
-   export default function manifest(): MetadataRoute.Manifest {
-     return {
-       name: "Sofrito",
-       short_name: "Sofrito",
-       description: "Recipe finder app",
-       display: "standalone",
-       start_url: "/",
-       theme_color: "#d97706",
-       background_color: "#fafafa",
-       icons: [
-         { src: "/icon-192.png", sizes: "192x192", type: "image/png" },
-         { src: "/icon-512.png", sizes: "512x512", type: "image/png" },
-       ],
-     };
-   }
-   ```
-
-3. **Metadata** — Add theme color + apple tags to `layout.tsx`
-
-4. **Service Worker** (future)
-   - Skip for MVP
-   - Can add later for offline support
+Allow rescaling saved recipes directly from the recipe detail or saved list view, without re-querying the LLM. This involves multiplying ingredient amounts by a factor within the UI.
 
 **Complexity**: Low
 

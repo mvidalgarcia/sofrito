@@ -33,5 +33,6 @@
   "ingredientPlaceholder": "Añade un ingrediente",
   "addIngredient": "Añadir",
   "suggestedRecipes": "Recetas sugeridas",
-  "servingsInput": "Porciones"
+  "servingsInput": "Porciones",
+  "confirmDelete": "¿Eliminar esta receta?"
 }

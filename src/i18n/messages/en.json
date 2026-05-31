@@ -33,5 +33,6 @@
   "ingredientPlaceholder": "Add an ingredient",
   "addIngredient": "Add",
   "suggestedRecipes": "Suggested recipes",
-  "servingsInput": "Servings"
+  "servingsInput": "Servings",
+  "confirmDelete": "Delete this recipe?"
 }
