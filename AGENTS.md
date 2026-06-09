@@ -36,6 +36,16 @@
 - Verify all CI checks pass locally
 - Check for sensitive data in commits (API keys, secrets go in .env)
 
+## Next.js 16
+
+- `middleware.ts` was renamed to `proxy.ts` (see https://nextjs.org/docs/messages/middleware-to-proxy)
+- Auth middleware lives in `src/proxy.ts` alongside next-intl routing
+
+## Environment
+
+- `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET` required for Google SSO
+- Generate AUTH_SECRET: `openssl rand -base64 32`
+
 ## When in Doubt
 
 - Ask for clarification rather than assuming

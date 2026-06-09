@@ -34,5 +34,9 @@
   "addIngredient": "Add",
   "suggestedRecipes": "Suggested recipes",
   "servingsInput": "Servings",
-  "confirmDelete": "Delete this recipe?"
+  "confirmDelete": "Delete this recipe?",
+  "loginTitle": "Sign in",
+  "loginDescription": "Sign in with Google to use Sofrito",
+  "signInWithGoogle": "Sign in with Google",
+  "signOut": "Sign out"
 }

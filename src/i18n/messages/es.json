@@ -34,5 +34,9 @@
   "addIngredient": "Añadir",
   "suggestedRecipes": "Recetas sugeridas",
   "servingsInput": "Porciones",
-  "confirmDelete": "¿Eliminar esta receta?"
+  "confirmDelete": "¿Eliminar esta receta?",
+  "loginTitle": "Iniciar sesión",
+  "loginDescription": "Accede con tu cuenta de Google para usar Sofrito",
+  "signInWithGoogle": "Iniciar sesión con Google",
+  "signOut": "Cerrar sesión"
 }
