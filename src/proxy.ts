@@ -6,6 +6,8 @@ type Locale = (typeof routing.locales)[number];
 
 const intl = createMiddleware(routing);
 
+const BYPASS_AUTH = process.env.E2E_TEST === "true";
+
 function extractLocale(parts: string[]): Locale {
   return parts[0] && routing.locales.includes(parts[0] as Locale)
     ? (parts[0] as Locale)
@@ -29,6 +31,8 @@ function redirectToHome(locale: Locale, baseUrl: string): Response {
 }
 
 export default auth((req) => {
+  if (BYPASS_AUTH) return intl(req);
+
   const parts = req.nextUrl.pathname.split("/").filter(Boolean);
   const locale = extractLocale(parts);
 

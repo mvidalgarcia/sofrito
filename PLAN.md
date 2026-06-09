@@ -12,16 +12,17 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 
 ## Tech Stack
 
-| Component  | Technology                | Notes                   |
-| ---------- | ------------------------- | ----------------------- |
-| Framework  | Next.js 16 (App Router)   | React-based, full-stack |
-| Styling    | Tailwind CSS v4           | Utility-first           |
-| Storage    | localStorage              | MVP - no auth needed    |
-| LLM        | OpenAI-compatible API     | Groq (qwen/qwen3-32b)   |
-| Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL    |
-| i18n       | next-intl                 | es (default) + en       |
-| PWA        | Service worker + manifest | Add to homescreen       |
-| Deployment | Vercel                    | Free hobby tier         |
+| Component  | Technology                | Notes                    |
+| ---------- | ------------------------- | ------------------------ |
+| Framework  | Next.js 16 (App Router)   | React-based, full-stack  |
+| Styling    | Tailwind CSS v4           | Utility-first            |
+| Storage    | localStorage              | MVP, future: Postgres    |
+| Auth       | NextAuth.js (v5)          | Google SSO, JWT sessions |
+| LLM        | OpenAI-compatible API     | Groq (qwen/qwen3-32b)    |
+| Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL     |
+| i18n       | next-intl                 | es (default) + en        |
+| PWA        | Service worker + manifest | Add to homescreen        |
+| Deployment | Vercel                    | Free hobby tier          |
 
 ---
 
@@ -209,6 +210,7 @@ playwright.config.ts             # Playwright config
 10. ✅ Servings adjustment (Comensales)
 11. ✅ E2E tests (Playwright, 4 tests)
 12. ✅ PWA (manifest, service worker, register)
+13. ✅ Google SSO (NextAuth.js v5, login gate, middleware)
 
 ---
 
@@ -236,15 +238,17 @@ pnpm run test:e2e     # e2e (local or against BASE_URL)
 
 ## Future Features
 
-### 1. Auth + Database (Vercel Postgres)
+### 1. Persistence + Database (Vercel Postgres)
 
-**Goal**: Add user accounts so recipes persist across devices and are tied to users.
+**Goal**: Replace localStorage with a database so recipes persist across devices.
+
+**Status**: Auth gate done (NextAuth.js v5, Google SSO, JWT sessions). Remaining: DB integration.
 
 **Stack**:
 
 - **Database**: Vercel Postgres (Neon) - 512MB free
 - **ORM**: Prisma or Drizzle
-- **Auth**: Clerk (easier) or NextAuth (more control)
+- **Auth**: NextAuth.js v5 ✅
 
 **Schema (Prisma)**:
 
@@ -271,32 +275,26 @@ model Recipe {
 }
 ```
 
-**Implementation**:
+**Remaining Implementation**:
 
 1. **Setup**
    - Create Vercel Postgres database
    - Add `POSTGRES_URL` environment variable
    - Set up Prisma schema
 
-2. **Auth Integration**
-   - Add Clerk/NextAuth
-   - Create auth middleware to protect routes
-   - Add sign-in/sign-up UI
-
-3. **Data Migration**
+2. **Data Migration**
    - Import existing localStorage recipes to new user account
    - Migrate share keys from `share:X` to `user:X:shares:X`
 
-4. **Update Routes**
+3. **Update Routes**
    - Replace localStorage with DB queries
    - Add user-scoped recipe queries
 
 **Free Tier Limits**:
 
 - Vercel Postgres: 512MB storage (~100k recipes)
-- Clerk: 100 monthly active users free
 
-**Complexity**: High
+**Complexity**: Medium (auth done)
 
 ---
 
