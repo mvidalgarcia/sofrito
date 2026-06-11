@@ -12,17 +12,18 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 
 ## Tech Stack
 
-| Component  | Technology                | Notes                    |
-| ---------- | ------------------------- | ------------------------ |
-| Framework  | Next.js 16 (App Router)   | React-based, full-stack  |
-| Styling    | Tailwind CSS v4           | Utility-first            |
-| Storage    | localStorage              | MVP, future: Postgres    |
-| Auth       | NextAuth.js (v5)          | Google SSO, JWT sessions |
-| LLM        | OpenAI-compatible API     | Groq (qwen/qwen3-32b)    |
-| Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL     |
-| i18n       | next-intl                 | es (default) + en        |
-| PWA        | Service worker + manifest | Add to homescreen        |
-| Deployment | Vercel                    | Free hobby tier          |
+| Component  | Technology                | Notes                          |
+| ---------- | ------------------------- | ------------------------------ |
+| Framework  | Next.js 16 (App Router)   | React-based, full-stack        |
+| Styling    | Tailwind CSS v4           | Utility-first                  |
+| Storage    | localStorage              | MVP, future: Postgres          |
+| Auth       | NextAuth.js (v5)          | Google SSO, JWT sessions       |
+| LLM        | OpenAI-compatible API     | Groq (qwen/qwen3-32b)          |
+| Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL           |
+| Images     | Vercel Blob               | User recipe photos, 500MB free |
+| i18n       | next-intl                 | es (default) + en              |
+| PWA        | Service worker + manifest | Add to homescreen              |
+| Deployment | Vercel                    | Free hobby tier                |
 
 ---
 
@@ -38,17 +39,20 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 - **PWA**: Add to homescreen, standalone display, service worker with network-first caching
 - **Dark mode**: System preference-based
 - **Responsive**: Works on mobile and desktop
+- **Create personal recipes**: Form to add your own recipes with name, ingredients, steps, photo
 
 ---
 
 ## Pages Structure
 
-| Route                  | Description               |
-| ---------------------- | ------------------------- |
-| `/[locale]`            | Home page with search     |
-| `/[locale]/recipes`    | All saved/made recipes    |
-| `/[locale]/recipe?id=` | Recipe detail             |
-| `/[locale]/share?id=`  | Shared recipe (KV-backed) |
+| Route                       | Description               |
+| --------------------------- | ------------------------- |
+| `/[locale]`                 | Home page with search     |
+| `/[locale]/recipes`         | All saved/made recipes    |
+| `/[locale]/recipe?id=`      | Recipe detail             |
+| `/[locale]/share?id=`       | Shared recipe (KV-backed) |
+| `/[locale]/recipe/new`      | Create manual recipe      |
+| `/[locale]/recipe/edit?id=` | Edit manual recipe        |
 
 ---
 
@@ -74,6 +78,8 @@ interface Recipe {
   createdAt?: string;
   status?: RecipeStatus;
   locale?: string;
+  imageUrl?: string; // Vercel Blob URL (manual recipes)
+  source?: "llm" | "manual"; // how the recipe was created
 }
 ```
 
@@ -107,6 +113,7 @@ KV_REST_API_TOKEN=your-kv-token
 | `/api/share`   | POST   | Store recipe in KV, return ID    |
 | `/api/share`   | GET    | Fetch shared recipe by ID        |
 | `/api/mock`    | GET    | Mock recipes (dev only)          |
+| `/api/upload`  | POST   | Upload image to Vercel Blob      |
 
 ---
 
@@ -153,12 +160,15 @@ src/
 │   │   ├── page.tsx             # Home + search mode toggle
 │   │   ├── recipes/page.tsx     # Recipe list (tabs)
 │   │   ├── recipe/page.tsx      # Recipe detail (by id)
+│   │   ├── recipe/new/page.tsx  # Create manual recipe
+│   │   ├── recipe/edit/page.tsx # Edit manual recipe (pre-filled form)
 │   │   └── share/page.tsx       # Shared recipe view + save
 │   └── api/
 │       ├── recipe/route.ts      # LLM search (single, scaled by servings)
 │       ├── share/route.ts       # KV-backed share
 │       ├── mock/route.ts        # Mock recipes (env-gated)
-│       └── recipes/route.ts     # Ingredient search, array, scaled by servings
+│       ├── recipes/route.ts     # Ingredient search, array, scaled by servings
+│       └── upload/route.ts      # Image upload to Vercel Blob
 ├── components/
 │   ├── ActionButtons.tsx        # Save / Mark as made
 │   ├── I18nProvider.tsx         # Client-side next-intl wrapper
@@ -168,6 +178,7 @@ src/
 │   ├── PwaRegister.tsx          # Service worker registration
 │   ├── RecipeCard.tsx           # Card in recipes list
 │   ├── RecipeDetail.tsx         # Full recipe view
+│   ├── RecipeForm.tsx           # Create/edit recipe form
 │   └── SearchBar.tsx            # Search input
 ├── i18n/
 │   ├── request.ts               # next-intl config
@@ -303,6 +314,53 @@ model Recipe {
 Allow rescaling saved recipes directly from the recipe detail or saved list view, without re-querying the LLM. This involves multiplying ingredient amounts by a factor within the UI.
 
 **Complexity**: Low
+
+---
+
+### 3. Create personal recipes (manual entry + photos)
+
+**Goal**: Allow users to create and save their own recipes with photos, alongside LLM-generated ones.
+
+**Stack**:
+
+- **Images**: Vercel Blob (500MB free, object storage)
+- **Storage**: localStorage (image URL only, not the blob itself)
+- **Source flag**: `source: "llm" | "manual"` on Recipe to track origin
+
+**Planned Implementation**:
+
+1. **Data model**
+   - Add `imageUrl?: string` and `source?: "llm" | "manual"` to Recipe type
+   - Manual recipes get `source: "manual"`, existing LLM recipes default to `source: "llm"`
+
+2. **Form page** (`/api/upload`)
+   - POST endpoint that accepts image → uploads to Vercel Blob → returns public URL
+   - Cleanup blob on recipe deletion (future improvement)
+
+3. **Form page** (`/[locale]/recipe/new`)
+   - Full-page form with fields: name, ingredients (dynamic list), steps (dynamic list), servings, prep time, cook time, photo upload
+   - Gallery picker (no separate camera shortcut)
+   - On submit: upload image first (if any), then save recipe to localStorage
+
+4. **Edit page** (`/[locale]/recipe/edit?id=`)
+   - Same form, pre-filled with existing recipe data
+   - On submit: update recipe in localStorage
+
+5. **Entry points**
+   - Button on home page (`/[locale]`)
+   - Button on recipe list page (`/[locale]/recipes`)
+
+6. **UI updates**
+   - RecipeCard and RecipeDetail: show image if `imageUrl` is present
+   - Badge/tag to differentiate manual vs LLM recipes
+   - Edit button on recipe detail page
+
+7. **Edge cases**
+   - Image upload errors: show toast, allow retry
+   - localStorage quota: warn user if approaching limit (though image URLs are small)
+   - Recipe deletion: image URL dies with localStorage, blob orphaned — Vercel Blob has automatic cleanup options or manual cleanup in a future iteration
+
+**Complexity**: Medium (form logic + Blob integration, no DB)
 
 ---
 
