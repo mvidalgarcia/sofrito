@@ -149,5 +149,6 @@ export async function GET(request: Request) {
   return NextResponse.json({
     ...recipe,
     id: generateId(recipe.name),
+    source: "llm",
   });
 }

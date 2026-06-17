@@ -15,6 +15,7 @@ export interface Recipe {
   createdAt?: string;
   status?: RecipeStatus;
   locale?: string;
+  source?: "llm" | "manual";
 }
 
 export type RecipeStatus = "saved" | "made";

@@ -38,5 +38,20 @@
   "loginTitle": "Sign in",
   "loginDescription": "Sign in with Google to use Sofrito",
   "signInWithGoogle": "Sign in with Google",
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "newRecipe": "New recipe",
+  "newRecipeTitle": "Create a recipe",
+  "recipeName": "Recipe name",
+  "recipeNamePlaceholder": "e.g. Chicken Tikka Masala",
+  "ingredientItem": "Ingredient",
+  "ingredientAmount": "Amount",
+  "stepPlaceholder": "Describe this step...",
+  "addStep": "Add step",
+  "removeStep": "Remove",
+  "saveRecipe": "Save recipe",
+  "recipeSaved": "Recipe saved!",
+  "createAnother": "Create another",
+  "requiredField": "This field is required",
+  "requiredIngredient": "Add at least one ingredient",
+  "requiredStep": "Add at least one step"
 }

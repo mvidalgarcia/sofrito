@@ -44,6 +44,7 @@ export function IngredientSearch() {
         ...r,
         id: generateId(r.name),
         locale,
+        source: "llm",
       }));
       setRecipes(withIds);
     } catch (err) {
@@ -158,7 +159,20 @@ export function IngredientSearch() {
                   className="flex w-full items-center justify-between px-4 py-4 text-left"
                 >
                   <div className="flex-1">
-                    <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</h3>
+                      {r.source && (
+                        <span
+                          className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
+                            r.source === "llm"
+                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                              : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          }`}
+                        >
+                          {r.source === "llm" ? "LLM" : "Manual"}
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
                       {r.servings} 🍽️ · {r.prepTime} · {r.cookTime}
                     </div>

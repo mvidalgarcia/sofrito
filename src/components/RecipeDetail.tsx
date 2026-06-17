@@ -41,7 +41,20 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
 
   return (
     <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-900">
-      <h2 className="mb-4 text-2xl font-bold text-zinc-900 dark:text-zinc-100">{recipe.name}</h2>
+      <div className="mb-4 flex items-start justify-between gap-4">
+        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{recipe.name}</h2>
+        {recipe.source && (
+          <span
+            className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
+              recipe.source === "llm"
+                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+            }`}
+          >
+            {recipe.source === "llm" ? "LLM" : "Manual"}
+          </span>
+        )}
+      </div>
 
       <div className="mb-6 flex gap-4 text-sm text-zinc-600 dark:text-zinc-400">
         <span>

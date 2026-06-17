@@ -13,5 +13,7 @@ export default defineConfig({
     command: "pnpm dev",
     port: 3000,
     reuseExistingServer: true,
+    // Scoped to Playwright's spawned dev server only — never affects prod
+    env: { E2E_TEST: process.env.E2E_TEST || "true" },
   },
 });

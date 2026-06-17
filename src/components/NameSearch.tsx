@@ -39,7 +39,7 @@ export function NameSearch() {
       if (!res.ok) {
         throw new Error(data.error || tError("apiNotConfigured"));
       }
-      setRecipe({ ...data, id: generateId(data.name), searchQuery, locale });
+      setRecipe({ ...data, id: generateId(data.name), searchQuery, locale, source: "llm" });
     } catch (err) {
       setError(err instanceof Error ? err.message : tError("apiNotConfigured"));
     } finally {

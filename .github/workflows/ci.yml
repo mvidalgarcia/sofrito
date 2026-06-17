@@ -84,13 +84,10 @@ jobs:
       - name: Install Playwright
         run: pnpm exec playwright install chromium
 
-      - name: Start dev server
-        run: |
-          E2E_TEST=true pnpm dev &
-          npx wait-on --timeout 120000 http://localhost:3000
-
       - name: Run e2e tests
         run: pnpm run test:e2e
+        env:
+          E2E_TEST: "true"
 
   e2e-prod:
     runs-on: ubuntu-latest

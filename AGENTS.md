@@ -24,6 +24,9 @@
 
 - Run tests before pushing edge changes
 - Keep tests in: `tests/` or alongside components with `.test.ts`/`.spec.ts`
+- E2E tests: `pnpm run test:e2e`
+- Run a single spec: `pnpm exec playwright test tests/e2e/<file>.spec.ts`
+- `E2E_TEST=true` bypasses auth middleware — set automatically by `playwright.config.ts` for the dev server; overridable via env var
 
 ## Git Commits
 

@@ -36,6 +36,17 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             <span className="rounded bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
               {t(recipe.status || "saved")}
             </span>
+            {recipe.source && (
+              <span
+                className={`rounded px-2 py-0.5 text-xs font-medium ${
+                  recipe.source === "llm"
+                    ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                    : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                }`}
+              >
+                {recipe.source === "llm" ? "LLM" : "Manual"}
+              </span>
+            )}
             <span className="text-zinc-500 dark:text-zinc-400">
               {recipe.servings} 🍽️ · {recipe.prepTime} · {recipe.cookTime}
             </span>

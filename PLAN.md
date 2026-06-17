@@ -39,20 +39,20 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 - **PWA**: Add to homescreen, standalone display, service worker with network-first caching
 - **Dark mode**: System preference-based
 - **Responsive**: Works on mobile and desktop
-- **Create personal recipes**: Form to add your own recipes with name, ingredients, steps, photo
+- **Create personal recipes**: Form to add your own recipes with name, ingredients, steps (no photos yet)
+- **Source badges**: LLM/Manual badges on recipes to distinguish origin
 
 ---
 
 ## Pages Structure
 
-| Route                       | Description               |
-| --------------------------- | ------------------------- |
-| `/[locale]`                 | Home page with search     |
-| `/[locale]/recipes`         | All saved/made recipes    |
-| `/[locale]/recipe?id=`      | Recipe detail             |
-| `/[locale]/share?id=`       | Shared recipe (KV-backed) |
-| `/[locale]/recipe/new`      | Create manual recipe      |
-| `/[locale]/recipe/edit?id=` | Edit manual recipe        |
+| Route                  | Description               |
+| ---------------------- | ------------------------- |
+| `/[locale]`            | Home page with search     |
+| `/[locale]/recipes`    | All saved/made recipes    |
+| `/[locale]/recipe?id=` | Recipe detail             |
+| `/[locale]/share?id=`  | Shared recipe (KV-backed) |
+| `/[locale]/recipe/new` | Create manual recipe      |
 
 ---
 
@@ -78,7 +78,6 @@ interface Recipe {
   createdAt?: string;
   status?: RecipeStatus;
   locale?: string;
-  imageUrl?: string; // Vercel Blob URL (manual recipes)
   source?: "llm" | "manual"; // how the recipe was created
 }
 ```
@@ -113,7 +112,6 @@ KV_REST_API_TOKEN=your-kv-token
 | `/api/share`   | POST   | Store recipe in KV, return ID    |
 | `/api/share`   | GET    | Fetch shared recipe by ID        |
 | `/api/mock`    | GET    | Mock recipes (dev only)          |
-| `/api/upload`  | POST   | Upload image to Vercel Blob      |
 
 ---
 
@@ -172,19 +170,20 @@ src/
 ├── components/
 │   ├── ActionButtons.tsx        # Save / Mark as made
 │   ├── I18nProvider.tsx         # Client-side next-intl wrapper
+│   ├── IngredientInput.tsx      # Dynamic ingredient form fields
 │   ├── IngredientSearch.tsx     # Ingredient search UI + servings + results
 │   ├── LangSwitcher.tsx         # ES/EN toggle
 │   ├── NameSearch.tsx           # Single recipe search UI + servings
 │   ├── PwaRegister.tsx          # Service worker registration
 │   ├── RecipeCard.tsx           # Card in recipes list
 │   ├── RecipeDetail.tsx         # Full recipe view
-│   ├── RecipeForm.tsx           # Create/edit recipe form
+│   ├── StepInput.tsx            # Dynamic step form fields
 │   └── SearchBar.tsx            # Search input
 ├── i18n/
 │   ├── request.ts               # next-intl config
 │   └── messages/
-│       ├── en.json              # 37 translation keys
-│       └── es.json              # 37 translation keys
+│       ├── en.json              # ~46 translation keys
+│       └── es.json              # ~46 translation keys
 ├── lib/
 │   ├── constants.ts             # All runtime constants (single source of truth)
 │   ├── types.ts                 # Recipe, Ingredient, RecipeStatus
@@ -200,7 +199,9 @@ public/
 
 tests/
 └── e2e/
-    └── home.spec.ts             # 4 e2e tests (load, toggle, servings, navigation)
+    ├── home.spec.ts             # 4 e2e tests (load, toggle, servings, navigation)
+    ├── login.spec.ts            # 1 smoke test (login page renders)
+    └── create-recipe.spec.ts    # 4 e2e tests (form, validation, full flow, reset)
 
 playwright.config.ts             # Playwright config
 ```
@@ -222,6 +223,7 @@ playwright.config.ts             # Playwright config
 11. ✅ E2E tests (Playwright, 4 tests)
 12. ✅ PWA (manifest, service worker, register)
 13. ✅ Google SSO (NextAuth.js v5, login gate, middleware)
+14. ✅ Manual recipe creation (form with dynamic ingredients/steps, source flag)
 
 ---
 
@@ -235,11 +237,11 @@ playwright.config.ts             # Playwright config
 
 ## Testing Strategy
 
-| Layer           | Status    | Tool       | Notes                    |
-| --------------- | --------- | ---------- | ------------------------ |
-| Unit tests      | ⏳ Future | Vitest     | storage, id, utils       |
-| Component tests | ⏳ Future | Vitest     | RecipeCard, RecipeDetail |
-| E2E tests       | ✅ Done   | Playwright | 4 tests on home page     |
+| Layer           | Status    | Tool       | Notes                                  |
+| --------------- | --------- | ---------- | -------------------------------------- |
+| Unit tests      | ⏳ Future | Vitest     | storage, id, utils                     |
+| Component tests | ⏳ Future | Vitest     | RecipeCard, RecipeDetail               |
+| E2E tests       | ✅ Done   | Playwright | 9 tests (home + login + create recipe) |
 
 ```bash
 pnpm run test:e2e     # e2e (local or against BASE_URL)
@@ -317,50 +319,41 @@ Allow rescaling saved recipes directly from the recipe detail or saved list view
 
 ---
 
-### 3. Create personal recipes (manual entry + photos)
+### 3. Add photos to personal recipes
 
-**Goal**: Allow users to create and save their own recipes with photos, alongside LLM-generated ones.
+**Goal**: Add photo upload support for manually created recipes.
+
+**Status**: Form ✅, source flag ✅, badges ✅, entry points ✅. Remaining: image upload.
 
 **Stack**:
 
 - **Images**: Vercel Blob (500MB free, object storage)
 - **Storage**: localStorage (image URL only, not the blob itself)
-- **Source flag**: `source: "llm" | "manual"` on Recipe to track origin
 
-**Planned Implementation**:
+**Remaining Implementation**:
 
-1. **Data model**
-   - Add `imageUrl?: string` and `source?: "llm" | "manual"` to Recipe type
-   - Manual recipes get `source: "manual"`, existing LLM recipes default to `source: "llm"`
-
-2. **Form page** (`/api/upload`)
+1. **Upload endpoint** (`/api/upload`)
    - POST endpoint that accepts image → uploads to Vercel Blob → returns public URL
    - Cleanup blob on recipe deletion (future improvement)
 
-3. **Form page** (`/[locale]/recipe/new`)
-   - Full-page form with fields: name, ingredients (dynamic list), steps (dynamic list), servings, prep time, cook time, photo upload
-   - Gallery picker (no separate camera shortcut)
-   - On submit: upload image first (if any), then save recipe to localStorage
+2. **Form page** (`/[locale]/recipe/new`)
+   - Add photo upload field (gallery picker, no camera shortcut)
+   - On submit: upload image first (if any), then save recipe
 
-4. **Edit page** (`/[locale]/recipe/edit?id=`)
+3. **Edit page** (`/[locale]/recipe/edit?id=`)
    - Same form, pre-filled with existing recipe data
    - On submit: update recipe in localStorage
 
-5. **Entry points**
-   - Button on home page (`/[locale]`)
-   - Button on recipe list page (`/[locale]/recipes`)
-
-6. **UI updates**
+4. **UI updates**
    - RecipeCard and RecipeDetail: show image if `imageUrl` is present
-   - Badge/tag to differentiate manual vs LLM recipes
    - Edit button on recipe detail page
 
-7. **Edge cases**
+5. **Edge cases**
    - Image upload errors: show toast, allow retry
-   - localStorage quota: warn user if approaching limit (though image URLs are small)
-   - Recipe deletion: image URL dies with localStorage, blob orphaned — Vercel Blob has automatic cleanup options or manual cleanup in a future iteration
+   - localStorage quota: warn user if approaching limit
+   - Recipe deletion: image URL dies with localStorage, blob orphaned
 
-**Complexity**: Medium (form logic + Blob integration, no DB)
+**Complexity**: Medium (Blob integration)
 
 ---
 
