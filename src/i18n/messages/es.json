@@ -38,5 +38,20 @@
   "loginTitle": "Iniciar sesión",
   "loginDescription": "Accede con tu cuenta de Google para usar Sofrito",
   "signInWithGoogle": "Iniciar sesión con Google",
-  "signOut": "Cerrar sesión"
+  "signOut": "Cerrar sesión",
+  "newRecipe": "Nueva receta",
+  "newRecipeTitle": "Crear una receta",
+  "recipeName": "Nombre de la receta",
+  "recipeNamePlaceholder": "ej. Pollo al curry",
+  "ingredientItem": "Ingrediente",
+  "ingredientAmount": "Cantidad",
+  "stepPlaceholder": "Describe este paso...",
+  "addStep": "Añadir paso",
+  "removeStep": "Eliminar",
+  "saveRecipe": "Guardar receta",
+  "recipeSaved": "¡Receta guardada!",
+  "createAnother": "Crear otra",
+  "requiredField": "Este campo es obligatorio",
+  "requiredIngredient": "Añade al menos un ingrediente",
+  "requiredStep": "Añade al menos un paso"
 }

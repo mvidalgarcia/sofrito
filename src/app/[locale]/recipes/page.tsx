@@ -37,9 +37,15 @@ export default function RecipesPage() {
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
       <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center px-4 py-4">
+        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
           <Link href="/" className="text-2xl font-bold text-amber-600">
             {t("title")}
+          </Link>
+          <Link
+            href="/recipe/new"
+            className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700"
+          >
+            + {t("newRecipe")}
           </Link>
         </div>
       </header>

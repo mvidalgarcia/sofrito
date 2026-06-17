@@ -56,6 +56,10 @@ LLM_MODEL=big-pickle
 - **LLM**: Any OpenAI-compatible API
 - **Storage**: localStorage (no database needed)
 
+## Built With
+
+This entire application was created using [DeepSeek V4 Flash Free](https://opencode.ai) — a free, open-source LLM — via OpenCode's agent mode.
+
 ## License
 
 MIT

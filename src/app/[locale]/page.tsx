@@ -21,6 +21,13 @@ export default function Home() {
           <Link href="/recipes" className="text-sm font-medium text-amber-600 hover:text-amber-700">
             {t("myRecipes")}
           </Link>
+          <span className="mx-2 text-zinc-300 dark:text-zinc-600">·</span>
+          <Link
+            href="/recipe/new"
+            className="text-sm font-medium text-amber-600 hover:text-amber-700"
+          >
+            {t("newRecipe")}
+          </Link>
         </div>
 
         <div className="mb-6 flex gap-2">
