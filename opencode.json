@@ -7,7 +7,7 @@
     },
     "push": {
       "description": "Stage, review, check, commit, and push",
-      "template": "Stage all changes, review the diff, run checks, then commit and push by running `bash run/push.sh`."
+      "template": "Run `git status --short` and `git diff --stat` to show changes and ask the user for confirmation. If confirmed, run typecheck + lint + format check and fix any issues. Then read `git diff` to understand the actual changes and generate a meaningful conventional commit message. Show the user the suggested message and let them confirm or edit it. Then commit and push."
     }
   }
 }
