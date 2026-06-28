@@ -1,5 +1,8 @@
 import { defineConfig } from "@playwright/test";
 
+const port = Number(process.env.PLAYWRIGHT_PORT || 3000);
+const baseURL = process.env.BASE_URL || `http://localhost:${port}`;
+
 export default defineConfig({
   testDir: "./tests/e2e",
   fullyParallel: true,
@@ -7,13 +10,15 @@ export default defineConfig({
   workers: 1,
   reporter: "list",
   use: {
-    baseURL: process.env.BASE_URL || "http://localhost:3000",
+    baseURL,
   },
-  webServer: {
-    command: "pnpm dev",
-    port: 3000,
-    reuseExistingServer: true,
-    // Scoped to Playwright's spawned dev server only — never affects prod
-    env: { E2E_TEST: process.env.E2E_TEST || "true" },
-  },
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: `pnpm exec next dev --port ${port}`,
+        port,
+        reuseExistingServer: !process.env.CI,
+        // Scoped to Playwright's spawned dev server only — never affects prod
+        env: { E2E_TEST: process.env.E2E_TEST || "true" },
+      },
 });

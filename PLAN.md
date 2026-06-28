@@ -188,6 +188,7 @@ src/
 │   ├── constants.ts             # All runtime constants (single source of truth)
 │   ├── types.ts                 # Recipe, Ingredient, RecipeStatus
 │   ├── storage.ts               # localStorage CRUD
+│   ├── scale-ingredient.ts      # Parse-and-skip amount rescaling
 │   └── id.ts                    # cyrb53 hash + generateId
 ├── proxy.ts                     # next-intl middleware
 └── routing.ts                   # Locale routing config
@@ -202,6 +203,7 @@ tests/
     ├── home.spec.ts             # 4 e2e tests (load, toggle, servings, navigation)
     ├── login.spec.ts            # 1 smoke test (login page renders)
     └── create-recipe.spec.ts    # 4 e2e tests (form, validation, full flow, reset)
+    └── rescale-recipe.spec.ts   # 1 e2e test (parse-and-skip rescaling)
 
 playwright.config.ts             # Playwright config
 ```
@@ -224,6 +226,7 @@ playwright.config.ts             # Playwright config
 12. ✅ PWA (manifest, service worker, register)
 13. ✅ Google SSO (NextAuth.js v5, login gate, middleware)
 14. ✅ Manual recipe creation (form with dynamic ingredients/steps, source flag)
+15. ✅ Rescale saved recipes (parse-and-skip, servings picker on detail view)
 
 ---
 
@@ -237,11 +240,11 @@ playwright.config.ts             # Playwright config
 
 ## Testing Strategy
 
-| Layer           | Status    | Tool       | Notes                                  |
-| --------------- | --------- | ---------- | -------------------------------------- |
-| Unit tests      | ⏳ Future | Vitest     | storage, id, utils                     |
-| Component tests | ⏳ Future | Vitest     | RecipeCard, RecipeDetail               |
-| E2E tests       | ✅ Done   | Playwright | 9 tests (home + login + create recipe) |
+| Layer           | Status    | Tool       | Notes                                             |
+| --------------- | --------- | ---------- | ------------------------------------------------- |
+| Unit tests      | ⏳ Future | Vitest     | storage, id, utils                                |
+| Component tests | ⏳ Future | Vitest     | RecipeCard, RecipeDetail                          |
+| E2E tests       | ✅ Done   | Playwright | 10 tests (home + login + create recipe + rescale) |
 
 ```bash
 pnpm run test:e2e     # e2e (local or against BASE_URL)
@@ -311,9 +314,43 @@ model Recipe {
 
 ---
 
-### 2. Rescale saved recipes
+### 2. Rescale saved recipes ✅
 
-Allow rescaling saved recipes directly from the recipe detail or saved list view, without re-querying the LLM. This involves multiplying ingredient amounts by a factor within the UI.
+**Status**: Done — `src/lib/scale-ingredient.ts`, servings picker in `RecipeDetail`, e2e test in `tests/e2e/rescale-recipe.spec.ts`.
+
+**Goal**: Allow rescaling saved recipes directly from the recipe detail or saved list view, without re-querying the LLM.
+
+**Approach**: Parse-and-skip — multiply ingredient amounts by a factor in the UI when a leading numeric value can be extracted; leave undetermined quantities unchanged.
+
+**Scaling logic**:
+
+1. Parse a leading number from each `amount` string (supports decimals, fractions like `1/2`, and unicode fractions like `¼`).
+2. If a number is found, multiply it by the scale factor and rewrite the amount (e.g. `"2 cups"` × 2 → `"4 cups"`, `"1/2 tsp"` × 2 → `"1 tsp"`).
+3. If no number is found, leave the amount unchanged (e.g. `"a pinch"`, `"to taste"`, `"q.b."`).
+
+**UX for unscaled amounts**:
+
+- Show unchanged amounts with muted styling or a `~` prefix so the user knows they were not auto-scaled and should use judgment.
+- Pinch-sized or “to taste” amounts often should not scale anyway; leaving them alone is acceptable default behavior.
+
+**Examples**:
+
+| Original   | Factor | Result     | Notes     |
+| ---------- | ------ | ---------- | --------- |
+| `2 cups`   | 2      | `4 cups`   | scaled    |
+| `1/2 tsp`  | 2      | `1 tsp`    | scaled    |
+| `a pinch`  | 2      | `a pinch`  | unchanged |
+| `to taste` | 2      | `to taste` | unchanged |
+| `q.b.`     | 2      | `q.b.`     | unchanged |
+
+**Implementation**:
+
+1. Add a pure utility (e.g. `scaleIngredientAmount(amount, factor)` in `src/lib/`) for parse → multiply → format.
+2. Add servings picker or scale factor control on recipe detail (and optionally saved list).
+3. Display scaled ingredients in the UI only; do not persist rescaling unless the user explicitly saves (keeps original recipe intact).
+4. i18n: label for unscaled amounts (e.g. “approximate” / “aproximado”).
+
+**Out of scope for MVP**: LLM-assisted rescaling for ambiguous amounts; inline editing of amounts (possible follow-up).
 
 **Complexity**: Low
 

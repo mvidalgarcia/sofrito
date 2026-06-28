@@ -2,9 +2,15 @@
 
 import { useTranslations } from "next-intl";
 import { Recipe } from "@/lib/types";
-import { DEFAULT_LOCALE, COPY_FEEDBACK_DURATION_MS } from "@/lib/constants";
+import {
+  DEFAULT_LOCALE,
+  COPY_FEEDBACK_DURATION_MS,
+  MIN_SERVINGS,
+  MAX_SERVINGS,
+} from "@/lib/constants";
+import { scaleIngredientAmount } from "@/lib/scale-ingredient";
 import { ActionButtons } from "./ActionButtons";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface RecipeDetailProps {
   recipe: Recipe;
@@ -15,6 +21,21 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
   const t = useTranslations();
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
+  const [displayServings, setDisplayServings] = useState(recipe.servings);
+
+  useEffect(() => {
+    setDisplayServings(recipe.servings);
+  }, [recipe.id, recipe.servings]);
+
+  const scaleFactor = displayServings / recipe.servings;
+  const scaledIngredients = useMemo(
+    () =>
+      recipe.ingredients.map((ing) => ({
+        item: ing.item,
+        ...scaleIngredientAmount(ing.amount, scaleFactor),
+      })),
+    [recipe.ingredients, scaleFactor],
+  );
 
   const handleShare = async () => {
     setSharing(true);
@@ -56,10 +77,36 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
         )}
       </div>
 
-      <div className="mb-6 flex gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-        <span>
-          🍽️ {recipe.servings} {t("servings")}
-        </span>
+      <div className="mb-6 flex flex-wrap gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center gap-2">
+          <span>🍽️ {t("servings")}:</span>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label={t("decreaseServings")}
+              data-testid="decrease-servings"
+              onClick={() => setDisplayServings(Math.max(MIN_SERVINGS, displayServings - 1))}
+              className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+            >
+              −
+            </button>
+            <span
+              data-testid="display-servings"
+              className="flex h-7 min-w-8 items-center justify-center rounded-lg bg-zinc-50 px-2 text-sm font-semibold text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
+            >
+              {displayServings}
+            </span>
+            <button
+              type="button"
+              aria-label={t("increaseServings")}
+              data-testid="increase-servings"
+              onClick={() => setDisplayServings(Math.min(MAX_SERVINGS, displayServings + 1))}
+              className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
+            >
+              +
+            </button>
+          </div>
+        </div>
         <span>
           ⏱️ {t("prepTime")}: {recipe.prepTime}
         </span>
@@ -73,11 +120,23 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
           {t("ingredients")}
         </h3>
         <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          {recipe.ingredients.map((ing, i) => (
-            <li key={i} className="text-zinc-700 dark:text-zinc-300">
-              • {ing.amount} {ing.item}
-            </li>
-          ))}
+          {scaledIngredients.map((ing, i) => {
+            const showApproximate = scaleFactor !== 1 && !ing.scaled;
+            return (
+              <li
+                key={i}
+                className={
+                  showApproximate
+                    ? "text-zinc-500 italic dark:text-zinc-500"
+                    : "text-zinc-700 dark:text-zinc-300"
+                }
+                title={showApproximate ? t("approximateAmount") : undefined}
+              >
+                • {showApproximate ? "~ " : ""}
+                {ing.amount} {ing.item}
+              </li>
+            );
+          })}
         </ul>
       </div>
 

@@ -55,5 +55,8 @@
   "createAnother": "Create another",
   "requiredField": "This field is required",
   "requiredIngredient": "Add at least one ingredient",
-  "requiredStep": "Add at least one step"
+  "requiredStep": "Add at least one step",
+  "approximateAmount": "Approximate — adjust to taste",
+  "increaseServings": "Increase servings",
+  "decreaseServings": "Decrease servings"
 }
