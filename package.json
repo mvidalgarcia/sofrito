@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "test:e2e": "playwright test",
     "test:e2e:smoke": "playwright test tests/e2e/login.spec.ts",
-    "pre-commit": "pnpm run format && git add -u && pnpm run typecheck && pnpm run lint",
+    "pre-commit": "pnpm run format && pnpm run typecheck && pnpm run lint",
     "prepare": "husky"
   },
   "dependencies": {
