@@ -52,12 +52,20 @@ function RecipeContent() {
           <Link href="/recipes" className="font-medium text-amber-600 hover:text-amber-700">
             ← {t("backList")}
           </Link>
-          <button
-            onClick={handleDelete}
-            className="cursor-pointer rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
-          >
-            ✕ {t("delete")}
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/recipe/edit?id=${id}`}
+              className="cursor-pointer rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            >
+              {t("edit")}
+            </Link>
+            <button
+              onClick={handleDelete}
+              className="cursor-pointer rounded-lg bg-zinc-100 px-3 py-1.5 text-sm text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-800 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            >
+              ✕ {t("delete")}
+            </button>
+          </div>
         </div>
       </header>
 

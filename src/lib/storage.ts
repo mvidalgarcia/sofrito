@@ -64,6 +64,17 @@ export function deleteRecipe(id: string): void {
   localStorage.setItem(key, JSON.stringify(updated));
 }
 
+export function updateRecipe(id: string, data: Recipe): void {
+  const key = STORAGE_KEY;
+  const existing: (Recipe & { status: RecipeStatus; createdAt: string })[] = JSON.parse(
+    localStorage.getItem(key) || "[]",
+  );
+  const updated = existing.map((r) =>
+    r.id === id ? { ...r, ...data, id, status: r.status, createdAt: r.createdAt } : r,
+  );
+  localStorage.setItem(key, JSON.stringify(updated));
+}
+
 export function updateRecipeStatus(id: string, status: RecipeStatus): void {
   const key = STORAGE_KEY;
   const existing: (Recipe & { status: RecipeStatus })[] = JSON.parse(
