@@ -1,14 +1,13 @@
 {
-  "customCommands": [
-    {
-      "name": "check",
+  "$schema": "https://opencode.ai/config.json",
+  "command": {
+    "check": {
       "description": "Run typecheck and lint",
-      "command": "pnpm run typecheck && pnpm run lint && pnpm run format:check"
+      "template": "Run typecheck, lint, and formatting check: `pnpm run typecheck && pnpm run lint && pnpm run format:check`\nFix any issues found."
     },
-    {
-      "name": "push",
+    "push": {
       "description": "Stage, review, check, commit, and push",
-      "command": "bash run/push.sh"
+      "template": "Stage all changes, review the diff, run checks, then commit and push by running `bash run/push.sh`."
     }
-  ]
+  }
 }
