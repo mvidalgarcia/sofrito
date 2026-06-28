@@ -1,0 +1,14 @@
+{
+  "customCommands": [
+    {
+      "name": "check",
+      "description": "Run typecheck and lint",
+      "command": "pnpm run typecheck && pnpm run lint && pnpm run format:check"
+    },
+    {
+      "name": "push",
+      "description": "Stage, review, check, commit, and push",
+      "command": "bash run/push.sh"
+    }
+  ]
+}
