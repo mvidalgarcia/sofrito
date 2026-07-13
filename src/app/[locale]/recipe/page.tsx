@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Recipe, RecipeStatus } from "@/lib/types";
 import { deleteRecipe, getRecipeById } from "@/lib/storage";
 import { RecipeDetail } from "@/components/RecipeDetail";
+import { PageHeader } from "@/components/PageHeader";
 
 function RecipeContent() {
   const t = useTranslations();
@@ -47,11 +48,13 @@ function RecipeContent() {
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
+      <PageHeader
+        left={
           <Link href="/recipes" className="font-medium text-amber-600 hover:text-amber-700">
             ← {t("backList")}
           </Link>
+        }
+        right={
           <div className="flex items-center gap-2">
             <Link
               href={`/recipe/edit?id=${id}`}
@@ -66,8 +69,8 @@ function RecipeContent() {
               ✕ {t("delete")}
             </button>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       <main className="mx-auto max-w-3xl px-4 py-8">
         <RecipeDetail recipe={recipe} />

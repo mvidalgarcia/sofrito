@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Recipe, RecipeStatus } from "@/lib/types";
 import { getAllRecipes } from "@/lib/storage";
 import { RecipeCard } from "@/components/RecipeCard";
+import { PageHeader } from "@/components/PageHeader";
 function getCounts(recipes: (Recipe & { status: RecipeStatus })[]) {
   return {
     all: recipes.length,
@@ -36,19 +37,21 @@ export default function RecipesPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
+      <PageHeader
+        left={
           <Link href="/" className="text-2xl font-bold text-amber-600">
             {t("title")}
           </Link>
+        }
+        right={
           <Link
             href="/recipe/new"
             className="rounded-lg bg-amber-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-700"
           >
             + {t("newRecipe")}
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       <main className="mx-auto max-w-3xl px-4 py-8">
         {recipes.length === 0 ? (

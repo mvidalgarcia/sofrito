@@ -8,6 +8,7 @@ import { Recipe } from "@/lib/types";
 import { generateId } from "@/lib/id";
 import { saveRecipe } from "@/lib/storage";
 import { RecipeDetail } from "@/components/RecipeDetail";
+import { PageHeader } from "@/components/PageHeader";
 
 function ShareContent() {
   const t = useTranslations();
@@ -75,24 +76,25 @@ function ShareContent() {
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
+      <PageHeader
+        left={
           <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
             ← {t("back")}
           </Link>
-          {!saved && (
+        }
+        right={
+          !saved ? (
             <button
               onClick={handleSave}
               className="rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-700"
             >
               {t("save")}
             </button>
-          )}
-          {saved && (
+          ) : (
             <span className="font-medium text-green-600 dark:text-green-400">✓ {t("saved")}</span>
-          )}
-        </div>
-      </header>
+          )
+        }
+      />
 
       <main className="mx-auto max-w-3xl px-4 py-8">
         <RecipeDetail recipe={recipe} showShareButton={false} />

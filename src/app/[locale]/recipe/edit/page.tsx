@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Recipe, RecipeStatus } from "@/lib/types";
 import { getRecipeById, updateRecipe } from "@/lib/storage";
 import { RecipeForm } from "@/components/RecipeForm";
+import { PageHeader } from "@/components/PageHeader";
 
 function EditContent() {
   const t = useTranslations();
@@ -63,16 +64,16 @@ function EditContent() {
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <header className="border-b border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="mx-auto flex max-w-3xl items-center px-4 py-4">
+      <PageHeader
+        left={
           <Link
             href={`/recipe?id=${id}`}
             className="font-medium text-amber-600 hover:text-amber-700"
           >
             ← {t("backList")}
           </Link>
-        </div>
-      </header>
+        }
+      />
 
       <main className="mx-auto max-w-3xl px-4 py-8">
         <h1 className="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-100">

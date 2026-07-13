@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { NameSearch } from "@/components/NameSearch";
 import { IngredientSearch } from "@/components/IngredientSearch";
+import { PageHeader } from "@/components/PageHeader";
 
 type SearchMode = "name" | "ingredients";
 
@@ -14,6 +15,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
+      <PageHeader />
       <main className="mx-auto max-w-3xl px-4 py-16">
         <div className="mb-12 text-center">
           <h1 className="mb-2 text-4xl font-bold text-zinc-900 dark:text-zinc-50">{t("title")}</h1>
