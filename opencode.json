@@ -3,7 +3,7 @@
   "mcp": {
     "chrome-devtools": {
       "type": "local",
-      "command": "npx",
+      "command": ["npx"],
       "args": ["-y", "chrome-devtools-mcp@latest"]
     }
   },

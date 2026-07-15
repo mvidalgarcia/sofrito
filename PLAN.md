@@ -18,7 +18,7 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 | Styling    | Tailwind CSS v4           | Utility-first                  |
 | Storage    | localStorage              | MVP, future: Postgres          |
 | Auth       | NextAuth.js (v5)          | Google SSO, JWT sessions       |
-| LLM        | OpenAI-compatible API     | Groq (qwen/qwen3-32b)          |
+| LLM        | OpenAI-compatible API     | Groq (openai/gpt-oss-120b)     |
 | Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL           |
 | Images     | Vercel Blob               | User recipe photos, 500MB free |
 | i18n       | next-intl                 | es (default) + en              |
@@ -94,7 +94,7 @@ LLM_API_KEY=gsk_your-groq-key-here
 
 # Optional: LLM provider (Groq)
 LLM_BASE_URL=https://api.groq.com/openai/v1
-LLM_MODEL=qwen/qwen3-32b
+LLM_MODEL=openai/gpt-oss-120b
 
 # Vercel KV (Upstash Redis) - required for sharing
 KV_REST_API_URL=your-kv-url
@@ -140,10 +140,10 @@ pnpm run test:e2e    # e2e with Playwright
 
 ## LLM Configuration
 
-| Provider                | baseURL                          | Model            |
-| ----------------------- | -------------------------------- | ---------------- |
-| Groq (current)          | `https://api.groq.com/openai/v1` | `qwen/qwen3-32b` |
-| OpenCode Zen (fallback) | `https://opencode.ai/zen/v1`     | `big-pickle`     |
+| Provider                | baseURL                          | Model                 |
+| ----------------------- | -------------------------------- | --------------------- |
+| Groq (current)          | `https://api.groq.com/openai/v1` | `openai/gpt-oss-120b` |
+| OpenCode Zen (fallback) | `https://opencode.ai/zen/v1`     | `big-pickle`          |
 
 ---
 

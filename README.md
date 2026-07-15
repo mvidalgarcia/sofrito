@@ -35,7 +35,7 @@ LLM_API_KEY=sk-your-api-key
 
 # Optional - LLM provider
 LLM_BASE_URL=https://opencode.ai/zen/v1
-LLM_MODEL=big-pickle
+LLM_MODEL=openai/gpt-oss-120b
 ```
 
 ### Supported LLM Providers
