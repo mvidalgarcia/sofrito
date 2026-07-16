@@ -19,3 +19,15 @@ export interface Recipe {
 }
 
 export type RecipeStatus = "saved" | "made";
+
+export type SavedRecipe = Recipe & {
+  status: RecipeStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateSavedRecipe = Omit<Recipe, "id" | "status" | "createdAt"> & {
+  status: RecipeStatus;
+};
+
+export type UpdateSavedRecipe = Partial<CreateSavedRecipe>;

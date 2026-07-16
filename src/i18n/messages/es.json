@@ -60,5 +60,9 @@
   "requiredStep": "Añade al menos un paso",
   "approximateAmount": "Aproximado — ajusta al gusto",
   "increaseServings": "Aumentar porciones",
-  "decreaseServings": "Reducir porciones"
+  "decreaseServings": "Reducir porciones",
+  "loadingRecipes": "Cargando recetas...",
+  "recipeLoadError": "No se pudieron cargar tus recetas. Inténtalo de nuevo.",
+  "recipeSaveError": "No se pudo guardar la receta. Inténtalo de nuevo.",
+  "recipeDeleteError": "No se pudo eliminar la receta. Inténtalo de nuevo."
 }

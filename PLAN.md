@@ -12,18 +12,18 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 
 ## Tech Stack
 
-| Component  | Technology                | Notes                          |
-| ---------- | ------------------------- | ------------------------------ |
-| Framework  | Next.js 16 (App Router)   | React-based, full-stack        |
-| Styling    | Tailwind CSS v4           | Utility-first                  |
-| Storage    | localStorage              | MVP, future: Postgres          |
-| Auth       | NextAuth.js (v5)          | Google SSO, JWT sessions       |
-| LLM        | OpenAI-compatible API     | Groq (openai/gpt-oss-120b)     |
-| Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL           |
-| Images     | Vercel Blob               | User recipe photos, 500MB free |
-| i18n       | next-intl                 | es (default) + en              |
-| PWA        | Service worker + manifest | Add to homescreen              |
-| Deployment | Vercel                    | Free hobby tier                |
+| Component  | Technology                | Notes                           |
+| ---------- | ------------------------- | ------------------------------- |
+| Framework  | Next.js 16 (App Router)   | React-based, full-stack         |
+| Styling    | Tailwind CSS v4           | Utility-first                   |
+| Database   | Neon Postgres + Drizzle   | Cross-device recipe persistence |
+| Auth       | NextAuth.js (v5)          | Google SSO, JWT sessions        |
+| LLM        | OpenAI-compatible API     | Groq (openai/gpt-oss-120b)      |
+| Cache      | Upstash Redis (Vercel KV) | Share links, 30d TTL            |
+| Images     | Vercel Blob               | User recipe photos, 500MB free  |
+| i18n       | next-intl                 | es (default) + en               |
+| PWA        | Service worker + manifest | Add to homescreen               |
+| Deployment | Vercel                    | Free hobby tier                 |
 
 ---
 
@@ -41,6 +41,7 @@ A web app to search recipes using an LLM. Find recipes by ingredients, save your
 - **Responsive**: Works on mobile and desktop
 - **Create personal recipes**: Form to add your own recipes with name, ingredients, steps (no photos yet)
 - **Source badges**: LLM/Manual badges on recipes to distinguish origin
+- **Cross-device persistence**: Recipes follow the signed-in Google account
 
 ---
 
@@ -82,7 +83,7 @@ interface Recipe {
 }
 ```
 
-Storage key: `sofrito_recipes` (localStorage, capped at 100)
+Saved recipes use UUIDs and are scoped by the normalized email from the authenticated session.
 
 ---
 
@@ -99,19 +100,25 @@ LLM_MODEL=openai/gpt-oss-120b
 # Vercel KV (Upstash Redis) - required for sharing
 KV_REST_API_URL=your-kv-url
 KV_REST_API_TOKEN=your-kv-token
+
+# Neon Postgres - required for saved recipes
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+RECIPE_REPOSITORY=postgres
 ```
 
 ---
 
 ## API Endpoints
 
-| Endpoint       | Method | Description                      |
-| -------------- | ------ | -------------------------------- |
-| `/api/recipe`  | POST   | Search via LLM (single recipe)   |
-| `/api/recipes` | POST   | Search via LLM (up to 3 recipes) |
-| `/api/share`   | POST   | Store recipe in KV, return ID    |
-| `/api/share`   | GET    | Fetch shared recipe by ID        |
-| `/api/mock`    | GET    | Mock recipes (dev only)          |
+| Endpoint                  | Method           | Description                      |
+| ------------------------- | ---------------- | -------------------------------- |
+| `/api/recipe`             | POST             | Search via LLM (single recipe)   |
+| `/api/recipes`            | POST             | Search via LLM (up to 3 recipes) |
+| `/api/share`              | POST             | Store recipe in KV, return ID    |
+| `/api/share`              | GET              | Fetch shared recipe by ID        |
+| `/api/mock`               | GET              | Mock recipes (dev only)          |
+| `/api/saved-recipes`      | GET/POST         | List and create user recipes     |
+| `/api/saved-recipes/[id]` | GET/PATCH/DELETE | User-scoped recipe CRUD          |
 
 ---
 
@@ -166,7 +173,7 @@ src/
 │       ├── share/route.ts       # KV-backed share
 │       ├── mock/route.ts        # Mock recipes (env-gated)
 │       ├── recipes/route.ts     # Ingredient search, array, scaled by servings
-│       └── upload/route.ts      # Image upload to Vercel Blob
+│       └── saved-recipes/       # Authenticated Postgres CRUD
 ├── components/
 │   ├── ActionButtons.tsx        # Save / Mark as made
 │   ├── I18nProvider.tsx         # Client-side next-intl wrapper
@@ -187,9 +194,13 @@ src/
 ├── lib/
 │   ├── constants.ts             # All runtime constants (single source of truth)
 │   ├── types.ts                 # Recipe, Ingredient, RecipeStatus
-│   ├── storage.ts               # localStorage CRUD
+│   ├── recipe-api.ts            # Async saved-recipe API client
+│   ├── repositories/            # Drizzle + in-memory repository implementations
 │   ├── scale-ingredient.ts      # Parse-and-skip amount rescaling
 │   └── id.ts                    # cyrb53 hash + generateId
+├── db/
+│   ├── index.ts                 # Lazy Neon/Drizzle connection
+│   └── schema.ts                # Recipes table
 ├── proxy.ts                     # next-intl middleware
 └── routing.ts                   # Locale routing config
 
@@ -204,6 +215,7 @@ tests/
     ├── login.spec.ts            # 1 smoke test (login page renders)
     └── create-recipe.spec.ts    # 4 e2e tests (form, validation, full flow, reset)
     └── rescale-recipe.spec.ts   # 1 e2e test (parse-and-skip rescaling)
+    └── saved-recipes-api.spec.ts # 5 e2e tests (CRUD, isolation, cross-device)
 
 playwright.config.ts             # Playwright config
 ```
@@ -227,6 +239,7 @@ playwright.config.ts             # Playwright config
 13. ✅ Google SSO (NextAuth.js v5, login gate, middleware)
 14. ✅ Manual recipe creation (form with dynamic ingredients/steps, source flag)
 15. ✅ Rescale saved recipes (parse-and-skip, servings picker on detail view)
+16. ✅ Cross-device database persistence (Neon + Drizzle, email-scoped recipes)
 
 ---
 
@@ -240,11 +253,11 @@ playwright.config.ts             # Playwright config
 
 ## Testing Strategy
 
-| Layer           | Status    | Tool       | Notes                                             |
-| --------------- | --------- | ---------- | ------------------------------------------------- |
-| Unit tests      | ⏳ Future | Vitest     | storage, id, utils                                |
-| Component tests | ⏳ Future | Vitest     | RecipeCard, RecipeDetail                          |
-| E2E tests       | ✅ Done   | Playwright | 10 tests (home + login + create recipe + rescale) |
+| Layer           | Status    | Tool       | Notes                                                            |
+| --------------- | --------- | ---------- | ---------------------------------------------------------------- |
+| Unit tests      | ⏳ Future | Vitest     | storage, id, utils                                               |
+| Component tests | ⏳ Future | Vitest     | RecipeCard, RecipeDetail                                         |
+| E2E tests       | ✅ Done   | Playwright | 15 tests including CRUD, ownership, and cross-device persistence |
 
 ```bash
 pnpm run test:e2e     # e2e (local or against BASE_URL)
@@ -254,63 +267,19 @@ pnpm run test:e2e     # e2e (local or against BASE_URL)
 
 ## Future Features
 
-### 1. Persistence + Database (Vercel Postgres)
+### 1. Persistence + Database ✅
 
-**Goal**: Replace localStorage with a database so recipes persist across devices.
+**Goal**: Persist recipes by authenticated email so the same Google account can access them across devices.
 
-**Status**: Auth gate done (NextAuth.js v5, Google SSO, JWT sessions). Remaining: DB integration.
+**Status**: Done — Neon Postgres, Drizzle ORM, UUID recipe IDs, authenticated CRUD API, and mocked E2E repository.
 
 **Stack**:
 
-- **Database**: Vercel Postgres (Neon) - 512MB free
-- **ORM**: Prisma or Drizzle
+- **Database**: Neon Postgres
+- **ORM**: Drizzle
 - **Auth**: NextAuth.js v5 ✅
 
-**Schema (Prisma)**:
-
-```prisma
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  recipes   Recipe[]
-  createdAt DateTime @default(now())
-}
-
-model Recipe {
-  id          String   @id
-  name        String
-  ingredients Json
-  steps       String[]
-  servings    Int
-  prepTime    String
-  cookTime    String
-  status      String   @default("saved")
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-}
-```
-
-**Remaining Implementation**:
-
-1. **Setup**
-   - Create Vercel Postgres database
-   - Add `POSTGRES_URL` environment variable
-   - Set up Prisma schema
-
-2. **Data Migration**
-   - Import existing localStorage recipes to new user account
-   - Migrate share keys from `share:X` to `user:X:shares:X`
-
-3. **Update Routes**
-   - Replace localStorage with DB queries
-   - Add user-scoped recipe queries
-
-**Free Tier Limits**:
-
-- Vercel Postgres: 512MB storage (~100k recipes)
-
-**Complexity**: Medium (auth done)
+No legacy browser data is migrated; Postgres is the sole saved-recipe source.
 
 ---
 
@@ -365,7 +334,7 @@ model Recipe {
 **Stack**:
 
 - **Images**: Vercel Blob (500MB free, object storage)
-- **Storage**: localStorage (image URL only, not the blob itself)
+- **Storage**: Neon recipe row (image URL only, not the blob itself)
 
 **Remaining Implementation**:
 
@@ -379,7 +348,7 @@ model Recipe {
 
 3. **Edit page** (`/[locale]/recipe/edit?id=`)
    - Same form, pre-filled with existing recipe data
-   - On submit: update recipe in localStorage
+   - On submit: update recipe through the saved-recipes API
 
 4. **UI updates**
    - RecipeCard and RecipeDetail: show image if `imageUrl` is present
@@ -387,8 +356,7 @@ model Recipe {
 
 5. **Edge cases**
    - Image upload errors: show toast, allow retry
-   - localStorage quota: warn user if approaching limit
-   - Recipe deletion: image URL dies with localStorage, blob orphaned
+   - Recipe deletion: delete the associated blob to avoid orphaned files
 
 **Complexity**: Medium (Blob integration)
 

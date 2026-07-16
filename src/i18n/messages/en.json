@@ -60,5 +60,9 @@
   "requiredStep": "Add at least one step",
   "approximateAmount": "Approximate — adjust to taste",
   "increaseServings": "Increase servings",
-  "decreaseServings": "Decrease servings"
+  "decreaseServings": "Decrease servings",
+  "loadingRecipes": "Loading recipes...",
+  "recipeLoadError": "Could not load your recipes. Please try again.",
+  "recipeSaveError": "Could not save the recipe. Please try again.",
+  "recipeDeleteError": "Could not delete the recipe. Please try again."
 }
