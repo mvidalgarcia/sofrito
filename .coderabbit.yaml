@@ -1,0 +1,56 @@
+language: en-US
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  changed_files_summary: true
+  path_filters:
+    - "!**/*.lock"
+    - "!**/pnpm-lock.yaml"
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+  path_instructions:
+    - path: "src/app/api/**"
+      instructions: |
+        Review API routes for:
+        - Input validation on all parameters
+        - Proper error handling with appropriate HTTP status codes
+        - LLM prompt injection risks
+        - Retry logic correctness
+    - path: "src/components/**"
+      instructions: |
+        Review React components for:
+        - Proper TypeScript types (no `any`)
+        - Accessibility (ARIA labels, keyboard navigation)
+        - Loading and error states
+        - i18n usage (no hardcoded strings)
+    - path: "src/lib/**"
+      instructions: |
+        Review utility code for:
+        - Edge case handling
+        - Pure function purity (no side effects)
+        - Type safety
+    - path: "**/*.spec.ts"
+      instructions: |
+        Review test files for:
+        - Coverage of edge cases, not just happy paths
+        - Proper assertions
+        - Test isolation (no shared mutable state between tests)
+    - path: "src/proxy.ts"
+      instructions: |
+        Review middleware for:
+        - Auth redirect logic correctness
+        - Locale routing edge cases
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
