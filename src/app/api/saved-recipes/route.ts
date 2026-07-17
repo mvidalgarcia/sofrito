@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { MAX_SAVED_RECIPES } from "@/lib/constants";
 import { getRecipeOwnerEmail } from "@/lib/recipe-owner";
 import { getRecipeRepository } from "@/lib/repositories";
 import { createSavedRecipeSchema } from "@/lib/recipe-validation";
@@ -48,15 +47,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const repository = getRecipeRepository();
-    if ((await repository.count(ownerEmail)) >= MAX_SAVED_RECIPES) {
-      return NextResponse.json(
-        { error: `Recipe limit of ${MAX_SAVED_RECIPES} reached` },
-        { status: 409 },
-      );
-    }
-
-    const recipe = await repository.create(ownerEmail, parsed.data);
+    const recipe = await getRecipeRepository().create(ownerEmail, parsed.data);
     return NextResponse.json(recipe, { status: 201 });
   } catch (error) {
     console.error("Failed to save recipe:", error);

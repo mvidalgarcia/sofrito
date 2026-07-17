@@ -2,7 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Create recipe manually", () => {
   test.beforeEach(async ({ page, request }) => {
-    await request.delete("/api/test/recipes");
+    const reset = await request.delete("/api/test/recipes");
+    expect(reset.status()).toBe(204);
     await page.goto("/en");
   });
 

@@ -64,5 +64,6 @@
   "loadingRecipes": "Cargando recetas...",
   "recipeLoadError": "No se pudieron cargar tus recetas. Inténtalo de nuevo.",
   "recipeSaveError": "No se pudo guardar la receta. Inténtalo de nuevo.",
-  "recipeDeleteError": "No se pudo eliminar la receta. Inténtalo de nuevo."
+  "recipeDeleteError": "No se pudo eliminar la receta. Inténtalo de nuevo.",
+  "retry": "Intentar de nuevo"
 }

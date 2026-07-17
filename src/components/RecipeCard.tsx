@@ -59,6 +59,7 @@ export function RecipeCard({ recipe, onDeleted }: RecipeCardProps) {
           disabled={deleting}
           className="cursor-pointer rounded-md p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
           title={t("delete")}
+          aria-label={t("delete")}
         >
           {deleting ? "…" : "✕"}
         </button>

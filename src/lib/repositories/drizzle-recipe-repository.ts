@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { getDb } from "@/db";
 import { recipes, type RecipeRow } from "@/db/schema";
 import type { CreateSavedRecipe, RecipeStatus, SavedRecipe, UpdateSavedRecipe } from "@/lib/types";
@@ -35,14 +35,6 @@ export const drizzleRecipeRepository: RecipeRepository = {
       .orderBy(desc(recipes.createdAt));
 
     return rows.map(toSavedRecipe);
-  },
-
-  async count(ownerEmail) {
-    const [result] = await getDb()
-      .select({ value: count() })
-      .from(recipes)
-      .where(eq(recipes.ownerEmail, ownerEmail));
-    return result.value;
   },
 
   async create(ownerEmail, recipe: CreateSavedRecipe) {

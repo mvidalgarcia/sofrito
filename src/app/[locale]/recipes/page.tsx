@@ -105,9 +105,13 @@ export default function RecipesPage() {
                 <RecipeCard
                   key={recipe.id}
                   recipe={recipe}
-                  onDeleted={(id) =>
-                    setRecipes((current) => current.filter((item) => item.id !== id))
-                  }
+                  onDeleted={(id) => {
+                    const next = recipes.filter((item) => item.id !== id);
+                    setRecipes(next);
+                    if (activeTab !== "all" && !next.some((item) => item.status === activeTab)) {
+                      setActiveTab("all");
+                    }
+                  }}
                 />
               ))}
             </div>

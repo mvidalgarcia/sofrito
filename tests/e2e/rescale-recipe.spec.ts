@@ -2,7 +2,8 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Rescale saved recipe", () => {
   test.beforeEach(async ({ request }) => {
-    await request.delete("/api/test/recipes");
+    const reset = await request.delete("/api/test/recipes");
+    expect(reset.status()).toBe(204);
   });
 
   test("scales parseable amounts and leaves approximate amounts unchanged", async ({ page }) => {

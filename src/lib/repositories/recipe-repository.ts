@@ -2,7 +2,6 @@ import type { CreateSavedRecipe, RecipeStatus, SavedRecipe, UpdateSavedRecipe } 
 
 export interface RecipeRepository {
   list(ownerEmail: string, status?: RecipeStatus): Promise<SavedRecipe[]>;
-  count(ownerEmail: string): Promise<number>;
   create(ownerEmail: string, recipe: CreateSavedRecipe): Promise<SavedRecipe>;
   getById(ownerEmail: string, id: string): Promise<SavedRecipe | null>;
   update(ownerEmail: string, id: string, recipe: UpdateSavedRecipe): Promise<SavedRecipe | null>;

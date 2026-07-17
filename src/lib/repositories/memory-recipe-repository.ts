@@ -22,10 +22,6 @@ export const memoryRecipeRepository: RecipeRepository = {
       .toSorted((a, b) => b.createdAt.localeCompare(a.createdAt));
   },
 
-  async count(ownerEmail) {
-    return [...recipes.keys()].filter((entryKey) => entryKey.startsWith(`${ownerEmail}:`)).length;
-  },
-
   async create(ownerEmail, recipe: CreateSavedRecipe) {
     const now = new Date().toISOString();
     const savedRecipe: SavedRecipe = {

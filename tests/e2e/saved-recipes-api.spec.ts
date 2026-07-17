@@ -13,7 +13,8 @@ const recipePayload = {
 
 test.describe("Saved recipes API", () => {
   test.beforeEach(async ({ request }) => {
-    await request.delete("/api/test/recipes");
+    const reset = await request.delete("/api/test/recipes");
+    expect(reset.status()).toBe(204);
   });
 
   test("allows duplicate names while assigning unique UUIDs", async ({ request }) => {
@@ -26,8 +27,12 @@ test.describe("Saved recipes API", () => {
     const first = (await firstResponse.json()) as { id: string };
     const second = (await secondResponse.json()) as { id: string };
     expect(first.id).not.toBe(second.id);
-    expect(first.id).toMatch(/^[0-9a-f-]{36}$/);
-    expect(second.id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(first.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
+    expect(second.id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    );
 
     const list = (await (await request.get("/api/saved-recipes")).json()) as unknown[];
     expect(list).toHaveLength(2);

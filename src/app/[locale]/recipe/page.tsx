@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { Recipe, RecipeStatus } from "@/lib/types";
-import { deleteSavedRecipe, getSavedRecipe } from "@/lib/recipe-api";
+import { deleteSavedRecipe, getSavedRecipe, RecipeApiError } from "@/lib/recipe-api";
 import { RecipeDetail } from "@/components/RecipeDetail";
 import { PageHeader } from "@/components/PageHeader";
 
@@ -16,20 +16,22 @@ function RecipeContent() {
   const id = searchParams.get("id");
   const [recipe, setRecipe] = useState<(Recipe & { status: RecipeStatus }) | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [deleteError, setDeleteError] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const handleDelete = async () => {
     if (!window.confirm(t("confirmDelete"))) return;
     if (!id) return;
     setDeleting(true);
-    setError(false);
+    setDeleteError(false);
     try {
       await deleteSavedRecipe(id);
       router.push("/recipes");
     } catch {
       setDeleting(false);
-      setError(true);
+      setDeleteError(true);
     }
   };
 
@@ -37,15 +39,26 @@ function RecipeContent() {
     let cancelled = false;
     if (!id) {
       setLoading(false);
+      setLoadError(false);
+      setRecipe(null);
       return;
     }
+
+    setLoading(true);
+    setLoadError(false);
+    setRecipe(null);
 
     getSavedRecipe(id)
       .then((found) => {
         if (!cancelled) setRecipe(found);
       })
-      .catch(() => {
-        if (!cancelled) setError(true);
+      .catch((err) => {
+        if (cancelled) return;
+        if (err instanceof RecipeApiError && err.status === 404) {
+          setLoadError(false);
+          return;
+        }
+        setLoadError(true);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -54,13 +67,30 @@ function RecipeContent() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [id, reloadKey]);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
         <main className="mx-auto max-w-3xl px-4 py-16 text-center text-zinc-500 dark:text-zinc-400">
           {t("loadingRecipes")}
+        </main>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
+        <main className="mx-auto max-w-3xl px-4 py-16 text-center">
+          <p className="mb-4 text-red-500">{t("recipeLoadError")}</p>
+          <button
+            type="button"
+            onClick={() => setReloadKey((key) => key + 1)}
+            className="cursor-pointer font-medium text-amber-600 hover:text-amber-700"
+          >
+            {t("retry")}
+          </button>
         </main>
       </div>
     );
@@ -109,7 +139,7 @@ function RecipeContent() {
       />
 
       <main className="mx-auto max-w-3xl px-4 py-8">
-        {error ? <p className="mb-4 text-sm text-red-500">{t("recipeDeleteError")}</p> : null}
+        {deleteError ? <p className="mb-4 text-sm text-red-500">{t("recipeDeleteError")}</p> : null}
         <RecipeDetail recipe={recipe} />
       </main>
     </div>

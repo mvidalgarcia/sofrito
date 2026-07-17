@@ -3,7 +3,6 @@ export const DEFAULT_SERVINGS = 4;
 export const MIN_SERVINGS = 1;
 export const MAX_SERVINGS = 12;
 export const DEFAULT_MODEL = "big-pickle";
-export const MAX_SAVED_RECIPES = 100;
 export const MAX_RETRIES = 3;
 export const NAME_SEARCH_MAX_TOKENS = 2048;
 export const INGREDIENT_SEARCH_MAX_TOKENS = 4096;
