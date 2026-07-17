@@ -11,7 +11,7 @@ A recipe search app powered by LLMs. Find recipes by ingredients or name, save y
 - **i18n**: Spanish (default) and English
 - **Dark mode**: System preference-based
 - **Responsive**: Works on mobile and desktop
-- **Privacy-First**: Your data stays in your browser (localStorage)
+- **Cross-device recipes**: Recipes follow your Google account across browsers and devices
 
 ## Quick Start
 
@@ -36,6 +36,18 @@ LLM_API_KEY=sk-your-api-key
 # Optional - LLM provider
 LLM_BASE_URL=https://opencode.ai/zen/v1
 LLM_MODEL=openai/gpt-oss-120b
+
+# Required - Neon Postgres recipe persistence
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+RECIPE_REPOSITORY=postgres
+```
+
+Provision Neon through the Vercel Marketplace and scope separate connection strings to Preview
+and Production. Drizzle migrations are checked into `drizzle/`:
+
+```bash
+pnpm run db:generate
+pnpm run db:migrate
 ```
 
 ### Supported LLM Providers
@@ -54,7 +66,7 @@ LLM_MODEL=openai/gpt-oss-120b
 - **Framework**: Next.js 16
 - **Styling**: Tailwind CSS
 - **LLM**: Any OpenAI-compatible API
-- **Storage**: localStorage (no database needed)
+- **Database**: Neon Postgres with Drizzle ORM
 
 ## Built With
 

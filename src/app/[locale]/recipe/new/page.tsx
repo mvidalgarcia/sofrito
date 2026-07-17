@@ -3,8 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { saveRecipe } from "@/lib/storage";
-import { generateId } from "@/lib/id";
+import { createSavedRecipe } from "@/lib/recipe-api";
 import { Recipe } from "@/lib/types";
 import { RecipeForm } from "@/components/RecipeForm";
 import { PageHeader } from "@/components/PageHeader";
@@ -42,22 +41,27 @@ export default function NewRecipePage() {
 
   const [key, setKey] = useState(0);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(false);
 
-  const handleSubmit = (data: Omit<Recipe, "id" | "source">) => {
-    saveRecipe(
-      {
-        id: generateId(data.name),
-        ...data,
-        source: "manual" as const,
-      },
-      "saved",
-    );
-    setSaved(true);
+  const handleSubmit = async (data: Omit<Recipe, "id" | "source">) => {
+    if (saving) return;
+    setSaving(true);
+    setError(false);
+    try {
+      await createSavedRecipe({ ...data, source: "manual" }, "saved");
+      setSaved(true);
+    } catch {
+      setError(true);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const reset = () => {
     setKey((k) => k + 1);
     setSaved(false);
+    setError(false);
   };
 
   if (saved) return <SuccessScreen onReset={reset} />;
@@ -77,6 +81,7 @@ export default function NewRecipePage() {
           {t("newRecipeTitle")}
         </h1>
 
+        {error ? <p className="mb-4 text-sm text-red-500">{t("recipeSaveError")}</p> : null}
         <RecipeForm key={key} onSubmit={handleSubmit} />
       </main>
     </div>

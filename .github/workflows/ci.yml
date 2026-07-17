@@ -88,6 +88,8 @@ jobs:
         run: pnpm run test:e2e
         env:
           E2E_TEST: "true"
+          E2E_USER_EMAIL: "e2e@sofrito.test"
+          RECIPE_REPOSITORY: "memory"
 
   e2e-prod:
     runs-on: ubuntu-latest
