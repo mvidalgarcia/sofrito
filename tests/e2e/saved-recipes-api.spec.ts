@@ -27,12 +27,8 @@ test.describe("Saved recipes API", () => {
     const first = (await firstResponse.json()) as { id: string };
     const second = (await secondResponse.json()) as { id: string };
     expect(first.id).not.toBe(second.id);
-    expect(first.id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
-    expect(second.id).toMatch(
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-    );
+    expect(first.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    expect(second.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 
     const list = (await (await request.get("/api/saved-recipes")).json()) as unknown[];
     expect(list).toHaveLength(2);
