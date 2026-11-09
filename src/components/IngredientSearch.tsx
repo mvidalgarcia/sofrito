@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Recipe } from "@/lib/types";
+import { Recipe, SavedRecipeState } from "@/lib/types";
 import { DEFAULT_SERVINGS, MIN_SERVINGS, MAX_SERVINGS } from "@/lib/constants";
 import { generateId } from "@/lib/id";
 import { RecipeDetail } from "@/components/RecipeDetail";
@@ -15,6 +15,7 @@ export function IngredientSearch() {
   const [ingredients, setIngredients] = useState([""]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [savedRecipes, setSavedRecipes] = useState<Record<string, SavedRecipeState>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
@@ -66,6 +67,10 @@ export function IngredientSearch() {
     const next = [...ingredients];
     next[index] = value;
     setIngredients(next);
+  };
+
+  const handleRecipeSaved = (recipeId: string, saved: SavedRecipeState) => {
+    setSavedRecipes((prev) => ({ ...prev, [recipeId]: saved }));
   };
 
   return (
@@ -184,13 +189,22 @@ export function IngredientSearch() {
 
                 {expandedIndex !== i && (
                   <div className="px-4 pb-2">
-                    <ActionButtons recipe={r} />
+                    <ActionButtons
+                      recipe={r}
+                      savedRecipe={savedRecipes[r.id]}
+                      onSaved={(saved) => handleRecipeSaved(r.id, saved)}
+                    />
                   </div>
                 )}
 
                 {expandedIndex === i && (
                   <div className="border-t border-zinc-200 dark:border-zinc-700">
-                    <RecipeDetail recipe={r} showShareButton={false} />
+                    <RecipeDetail
+                      recipe={r}
+                      showShareButton={false}
+                      savedRecipe={savedRecipes[r.id]}
+                      onSaved={(saved) => handleRecipeSaved(r.id, saved)}
+                    />
                   </div>
                 )}
               </div>

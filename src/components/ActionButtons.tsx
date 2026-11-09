@@ -1,37 +1,47 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Recipe, RecipeStatus } from "@/lib/types";
+import { Recipe, RecipeStatus, SavedRecipeState } from "@/lib/types";
 import { createSavedRecipe, updateSavedRecipe } from "@/lib/recipe-api";
 import { useEffect, useState } from "react";
 
 interface ActionButtonsProps {
   recipe: Recipe;
+  savedRecipe?: SavedRecipeState | null;
+  onSaved?: (saved: SavedRecipeState) => void;
 }
 
-export function ActionButtons({ recipe }: ActionButtonsProps) {
+export function ActionButtons({ recipe, savedRecipe, onSaved }: ActionButtonsProps) {
   const t = useTranslations();
-  const [savedId, setSavedId] = useState<string | null>(recipe.status ? recipe.id : null);
-  const [savedStatus, setSavedStatus] = useState<RecipeStatus | null>(recipe.status ?? null);
+  const savedRecipeId = savedRecipe?.id;
+  const savedRecipeStatus = savedRecipe?.status;
+  const [savedId, setSavedId] = useState<string | null>(
+    savedRecipeId ?? (recipe.status ? recipe.id : null),
+  );
+  const [savedStatus, setSavedStatus] = useState<RecipeStatus | null>(
+    savedRecipeStatus ?? recipe.status ?? null,
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    setSavedId(recipe.status ? recipe.id : null);
-    setSavedStatus(recipe.status ?? null);
+    setSavedId(savedRecipeId ?? (recipe.status ? recipe.id : null));
+    setSavedStatus(savedRecipeStatus ?? recipe.status ?? null);
     setError(false);
-  }, [recipe.id, recipe.status]);
+  }, [recipe.id, recipe.status, savedRecipeId, savedRecipeStatus]);
 
   const handleSave = async (status: RecipeStatus) => {
     if (saving || savedStatus === status) return;
     setSaving(true);
     setError(false);
     try {
-      const saved = savedId
+      const result = savedId
         ? await updateSavedRecipe(savedId, { status })
         : await createSavedRecipe(recipe, status);
+      const saved = { id: result.id, status: result.status };
       setSavedId(saved.id);
       setSavedStatus(saved.status);
+      onSaved?.(saved);
     } catch {
       setError(true);
     } finally {

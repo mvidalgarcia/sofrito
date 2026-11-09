@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Recipe } from "@/lib/types";
+import { Recipe, SavedRecipeState } from "@/lib/types";
 import {
   DEFAULT_LOCALE,
   COPY_FEEDBACK_DURATION_MS,
@@ -16,9 +16,16 @@ import { useEffect, useMemo, useState } from "react";
 interface RecipeDetailProps {
   recipe: Recipe;
   showShareButton?: boolean;
+  savedRecipe?: SavedRecipeState | null;
+  onSaved?: (saved: SavedRecipeState) => void;
 }
 
-export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailProps) {
+export function RecipeDetail({
+  recipe,
+  showShareButton = true,
+  savedRecipe,
+  onSaved,
+}: RecipeDetailProps) {
   const t = useTranslations();
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -157,7 +164,7 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
         </ol>
       </div>
 
-      <ActionButtons recipe={recipe} />
+      <ActionButtons recipe={recipe} savedRecipe={savedRecipe} onSaved={onSaved} />
 
       {showShareButton && (
         <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">

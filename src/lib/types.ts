@@ -26,6 +26,8 @@ export type SavedRecipe = Recipe & {
   updatedAt: string;
 };
 
+export type SavedRecipeState = Pick<SavedRecipe, "id" | "status">;
+
 export type CreateSavedRecipe = Omit<Recipe, "id" | "status" | "createdAt"> & {
   status: RecipeStatus;
 };
