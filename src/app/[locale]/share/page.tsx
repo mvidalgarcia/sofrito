@@ -6,6 +6,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Recipe } from "@/lib/types";
 import { generateId } from "@/lib/id";
+import { toShareableRecipe } from "@/lib/recipe-share";
 import { RecipeDetail } from "@/components/RecipeDetail";
 import { PageHeader } from "@/components/PageHeader";
 
@@ -31,7 +32,8 @@ function ShareContent() {
         return res.json();
       })
       .then((data) => {
-        setRecipe({ ...data, id: generateId(data.name), locale });
+        const shared = toShareableRecipe({ ...data, locale });
+        setRecipe({ ...shared, id: generateId(data.name) });
         setLoading(false);
       })
       .catch(() => {

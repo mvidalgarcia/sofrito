@@ -9,6 +9,7 @@ import {
   MAX_SERVINGS,
 } from "@/lib/constants";
 import { scaleIngredientAmount } from "@/lib/scale-ingredient";
+import { toShareableRecipe } from "@/lib/recipe-share";
 import { ActionButtons } from "./ActionButtons";
 import { useEffect, useMemo, useState } from "react";
 
@@ -43,7 +44,7 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
       const res = await fetch("/api/share", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(recipe),
+        body: JSON.stringify(toShareableRecipe(recipe)),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
