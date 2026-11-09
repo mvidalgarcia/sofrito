@@ -61,7 +61,7 @@ jobs:
         run: pnpm run build
 
   e2e:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: check
 
     steps:
@@ -92,7 +92,7 @@ jobs:
           RECIPE_REPOSITORY: "memory"
 
   e2e-prod:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: build
     if: github.ref == 'refs/heads/main'
 
