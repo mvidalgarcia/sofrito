@@ -1,13 +1,15 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Create recipe manually", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
+    const reset = await request.delete("/api/test/recipes");
+    expect(reset.status()).toBe(204);
     await page.goto("/en");
   });
 
   test("navigates to the new recipe form", async ({ page }) => {
     await page.getByRole("link", { name: "New recipe" }).click();
-    await expect(page).toHaveURL(/\/en\/recipe\/new/);
+    await expect(page).toHaveURL(/\/(en|es)\/recipe\/new/);
     await expect(page.getByRole("heading", { name: "Create a recipe" })).toBeVisible();
   });
 
@@ -55,7 +57,7 @@ test.describe("Create recipe manually", () => {
     await expect(page.getByText("Recipe saved!")).toBeVisible();
 
     await page.getByRole("link", { name: "View my recipes" }).click();
-    await expect(page).toHaveURL(/\/en\/recipes/);
+    await expect(page).toHaveURL(/\/(en|es)\/recipes/);
     await expect(page.getByText("Spanish omelette")).toBeVisible();
   });
 

@@ -17,8 +17,12 @@ export default defineConfig({
     : {
         command: `pnpm exec next dev --port ${port}`,
         port,
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: false,
         // Scoped to Playwright's spawned dev server only — never affects prod
-        env: { E2E_TEST: process.env.E2E_TEST || "true" },
+        env: {
+          E2E_TEST: process.env.E2E_TEST || "true",
+          E2E_USER_EMAIL: process.env.E2E_USER_EMAIL || "e2e@sofrito.test",
+          RECIPE_REPOSITORY: "memory",
+        },
       },
 });

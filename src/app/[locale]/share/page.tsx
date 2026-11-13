@@ -6,7 +6,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Recipe } from "@/lib/types";
 import { generateId } from "@/lib/id";
-import { saveRecipe } from "@/lib/storage";
+import { toShareableRecipe } from "@/lib/recipe-share";
 import { RecipeDetail } from "@/components/RecipeDetail";
 import { PageHeader } from "@/components/PageHeader";
 
@@ -16,7 +16,6 @@ function ShareContent() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
   const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -33,7 +32,8 @@ function ShareContent() {
         return res.json();
       })
       .then((data) => {
-        setRecipe({ ...data, id: generateId(data.name), locale });
+        const shared = toShareableRecipe({ ...data, locale });
+        setRecipe({ ...shared, id: generateId(data.name) });
         setLoading(false);
       })
       .catch(() => {
@@ -41,13 +41,6 @@ function ShareContent() {
         setLoading(false);
       });
   }, [id, locale]);
-
-  const handleSave = () => {
-    if (recipe) {
-      saveRecipe(recipe, "saved");
-      setSaved(true);
-    }
-  };
 
   if (loading) {
     return (
@@ -81,18 +74,6 @@ function ShareContent() {
           <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
             ← {t("back")}
           </Link>
-        }
-        right={
-          !saved ? (
-            <button
-              onClick={handleSave}
-              className="rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-700"
-            >
-              {t("save")}
-            </button>
-          ) : (
-            <span className="font-medium text-green-600 dark:text-green-400">✓ {t("saved")}</span>
-          )
         }
       />
 

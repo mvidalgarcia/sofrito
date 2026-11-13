@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Recipe } from "@/lib/types";
+import { Recipe, SavedRecipeState } from "@/lib/types";
 import {
   DEFAULT_LOCALE,
   COPY_FEEDBACK_DURATION_MS,
@@ -9,15 +9,23 @@ import {
   MAX_SERVINGS,
 } from "@/lib/constants";
 import { scaleIngredientAmount } from "@/lib/scale-ingredient";
+import { toShareableRecipe } from "@/lib/recipe-share";
 import { ActionButtons } from "./ActionButtons";
 import { useEffect, useMemo, useState } from "react";
 
 interface RecipeDetailProps {
   recipe: Recipe;
   showShareButton?: boolean;
+  savedRecipe?: SavedRecipeState | null;
+  onSaved?: (saved: SavedRecipeState) => void;
 }
 
-export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailProps) {
+export function RecipeDetail({
+  recipe,
+  showShareButton = true,
+  savedRecipe,
+  onSaved,
+}: RecipeDetailProps) {
   const t = useTranslations();
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
@@ -43,7 +51,7 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
       const res = await fetch("/api/share", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(recipe),
+        body: JSON.stringify(toShareableRecipe(recipe)),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -156,7 +164,7 @@ export function RecipeDetail({ recipe, showShareButton = true }: RecipeDetailPro
         </ol>
       </div>
 
-      <ActionButtons recipe={recipe} />
+      <ActionButtons recipe={recipe} savedRecipe={savedRecipe} onSaved={onSaved} />
 
       {showShareButton && (
         <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Recipe, RecipeStatus } from "@/lib/types";
-import { getAllRecipes } from "@/lib/storage";
+import { listSavedRecipes } from "@/lib/recipe-api";
 import { RecipeCard } from "@/components/RecipeCard";
 import { PageHeader } from "@/components/PageHeader";
 function getCounts(recipes: (Recipe & { status: RecipeStatus })[]) {
@@ -19,12 +19,27 @@ export default function RecipesPage() {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState<RecipeStatus | "all">("all");
   const [recipes, setRecipes] = useState<(Recipe & { status: RecipeStatus })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setRecipes(getAllRecipes());
-    }
-  }, [activeTab]);
+    let cancelled = false;
+
+    listSavedRecipes()
+      .then((data) => {
+        if (!cancelled) setRecipes(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const counts = getCounts(recipes);
   const filtered = activeTab === "all" ? recipes : recipes.filter((r) => r.status === activeTab);
@@ -54,7 +69,13 @@ export default function RecipesPage() {
       />
 
       <main className="mx-auto max-w-3xl px-4 py-8">
-        {recipes.length === 0 ? (
+        {loading ? (
+          <p className="py-12 text-center text-zinc-500 dark:text-zinc-400">
+            {t("loadingRecipes")}
+          </p>
+        ) : error ? (
+          <p className="py-12 text-center text-red-500">{t("recipeLoadError")}</p>
+        ) : recipes.length === 0 ? (
           <div className="py-12 text-center">
             <p className="mb-4 text-zinc-500 dark:text-zinc-400">{t("empty")}</p>
             <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
@@ -81,7 +102,17 @@ export default function RecipesPage() {
 
             <div className="grid gap-4">
               {filtered.map((recipe) => (
-                <RecipeCard key={recipe.id} recipe={recipe} />
+                <RecipeCard
+                  key={recipe.id}
+                  recipe={recipe}
+                  onDeleted={(id) => {
+                    const next = recipes.filter((item) => item.id !== id);
+                    setRecipes(next);
+                    if (activeTab !== "all" && !next.some((item) => item.status === activeTab)) {
+                      setActiveTab("all");
+                    }
+                  }}
+                />
               ))}
             </div>
           </>
