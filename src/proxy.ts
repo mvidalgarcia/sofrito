@@ -20,9 +20,9 @@ function isPublic(path: string): boolean {
   return PUBLIC_PATHS.has(path);
 }
 
-function redirectToLogin(baseUrl: string, pathname: string, locale: Locale): Response {
+function redirectToLogin(baseUrl: string, callbackPath: string, locale: Locale): Response {
   const loginUrl = new URL(`/${locale}/login`, baseUrl);
-  loginUrl.searchParams.set("callbackUrl", pathname);
+  loginUrl.searchParams.set("callbackUrl", callbackPath);
   return Response.redirect(loginUrl);
 }
 
@@ -37,7 +37,8 @@ export default auth((req) => {
   const locale = extractLocale(parts);
 
   if (!req.auth && !isPublic(parts[parts.length - 1])) {
-    return redirectToLogin(req.url, req.nextUrl.pathname, locale);
+    // Keep the query string (e.g. share ?id=...) so deep links survive the login redirect
+    return redirectToLogin(req.url, req.nextUrl.pathname + req.nextUrl.search, locale);
   }
 
   if (req.auth && isPublic(parts[parts.length - 1])) {
