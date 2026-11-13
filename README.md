@@ -50,6 +50,11 @@ pnpm run db:generate
 pnpm run db:migrate
 ```
 
+On Vercel, migrations run automatically: the `vercel-build` script runs `drizzle-kit migrate`
+before `next build`, so each deployment migrates its own database (Production's `main` branch or
+the Preview deployment's Neon branch). A failed migration fails the build. Locally, run
+`pnpm run db:generate` after changing `src/db/schema.ts` and commit the generated SQL.
+
 ### Supported LLM Providers
 
 | Provider               | baseURL                          | Model                     | Notes                                   |
