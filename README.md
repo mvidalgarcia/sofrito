@@ -30,11 +30,12 @@ Open http://localhost:3000 to use the app.
 Create a `.env` file:
 
 ```env
-# Required - LLM API key
-LLM_API_KEY=sk-your-api-key
+# Required - Groq API key
+# Create at: https://console.groq.com/keys
+LLM_API_KEY=gsk_your-groq-key
 
-# Optional - LLM provider
-LLM_BASE_URL=https://opencode.ai/zen/v1
+# Optional - override the Groq defaults
+LLM_BASE_URL=https://api.groq.com/openai/v1
 LLM_MODEL=openai/gpt-oss-120b
 
 # Required - Neon Postgres recipe persistence
@@ -57,14 +58,13 @@ the Preview deployment's Neon branch). A failed migration fails the build. Local
 
 ### Supported LLM Providers
 
-| Provider               | baseURL                          | Model                     | Notes                                   |
-| ---------------------- | -------------------------------- | ------------------------- | --------------------------------------- |
-| Groq (recommended)     | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` | Free, fast, get key at console.groq.com |
-| OpenCode Zen (default) | `https://opencode.ai/zen/v1`     | `big-pickle`              | Free, unlimited                         |
-| MiniMax                | `https://api.minimax.io/v1`      | `MiniMax-M2.5`            | Requires account                        |
-| Hypereal               | `https://hypereal.tech/api/v1`   | `minimax-m2.5`            | 35 free credits                         |
-| OpenAI                 | `https://api.openai.com/v1`      | `gpt-4o-mini`             | Paid                                    |
-| Anthropic              | `https://api.anthropic.com`      | `claude-3-haiku`          | Paid                                    |
+| Provider       | baseURL                          | Model                 | Notes                                  |
+| -------------- | -------------------------------- | --------------------- | -------------------------------------- |
+| Groq (default) | `https://api.groq.com/openai/v1` | `openai/gpt-oss-120b` | Free tier, get key at console.groq.com |
+| MiniMax        | `https://api.minimax.io/v1`      | `MiniMax-M2.5`        | Requires account                       |
+| Hypereal       | `https://hypereal.tech/api/v1`   | `minimax-m2.5`        | 35 free credits                        |
+| OpenAI         | `https://api.openai.com/v1`      | `gpt-4o-mini`         | Paid                                   |
+| Anthropic      | `https://api.anthropic.com`      | `claude-3-haiku`      | Paid                                   |
 
 ## Tech Stack
 
