@@ -147,10 +147,11 @@ pnpm run test:e2e    # e2e with Playwright
 
 ## LLM Configuration
 
-| Provider                | baseURL                          | Model                 |
-| ----------------------- | -------------------------------- | --------------------- |
-| Groq (current)          | `https://api.groq.com/openai/v1` | `openai/gpt-oss-120b` |
-| OpenCode Zen (fallback) | `https://opencode.ai/zen/v1`     | `big-pickle`          |
+| Provider       | baseURL                          | Model                 |
+| -------------- | -------------------------------- | --------------------- |
+| Groq (default) | `https://api.groq.com/openai/v1` | `openai/gpt-oss-120b` |
+
+Both default values can be overridden with `LLM_BASE_URL` and `LLM_MODEL`.
 
 ---
 
