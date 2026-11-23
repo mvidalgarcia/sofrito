@@ -2,6 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
+import { FullPageLoading } from "@/components/FullPageLoading";
 import { useTranslations } from "next-intl";
 import { PencilLine, Trash2 } from "lucide-react";
 import { Recipe, RecipeStatus } from "@/lib/types";
@@ -142,7 +143,7 @@ function RecipeContent() {
 
 export default function RecipePage() {
   return (
-    <Suspense fallback={<div className="bg-paper min-h-screen" />}>
+    <Suspense fallback={<FullPageLoading />}>
       <RecipeContent />
     </Suspense>
   );
