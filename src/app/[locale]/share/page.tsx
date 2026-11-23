@@ -1,14 +1,15 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Recipe } from "@/lib/types";
 import { generateId } from "@/lib/id";
 import { toShareableRecipe } from "@/lib/recipe-share";
 import { RecipeDetail } from "@/components/RecipeDetail";
-import { PageHeader } from "@/components/PageHeader";
+import { AppShell, PageHeader } from "@/components/PageHeader";
+import { RecipeNotFound } from "@/components/RecipeStates";
+import { PageLoading } from "@/components/ui/States";
 
 function ShareContent() {
   const t = useTranslations();
@@ -42,51 +43,22 @@ function ShareContent() {
       });
   }, [id, locale]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-        <main className="mx-auto max-w-3xl px-4 py-16 text-center text-zinc-500 dark:text-zinc-400">
-          Loading...
-        </main>
-      </div>
-    );
-  }
-
-  if (error || !recipe) {
-    return (
-      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-        <main className="mx-auto max-w-3xl px-4 py-16">
-          <div className="text-center">
-            <p className="mb-4 text-zinc-500 dark:text-zinc-400">{t("notFound")}</p>
-            <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
-              ← {t("back")}
-            </Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <PageHeader
-        left={
-          <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
-            ← {t("back")}
-          </Link>
-        }
-      />
-
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <RecipeDetail recipe={recipe} showShareButton={false} />
-      </main>
-    </div>
+    <AppShell wide header={<PageHeader wide />}>
+      {loading ? (
+        <PageLoading label={t("loadingRecipe")} />
+      ) : error || !recipe ? (
+        <RecipeNotFound />
+      ) : (
+        <RecipeDetail recipe={recipe} wide showShareButton={false} eyebrow={t("sharedWithYou")} />
+      )}
+    </AppShell>
   );
 }
 
 export default function SharePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-50 dark:bg-zinc-950" />}>
+    <Suspense fallback={<div className="bg-paper min-h-screen" />}>
       <ShareContent />
     </Suspense>
   );

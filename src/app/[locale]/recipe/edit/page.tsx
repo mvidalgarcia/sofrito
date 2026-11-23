@@ -1,13 +1,16 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { useEffect, useState, Suspense } from "react";
 import { useTranslations } from "next-intl";
 import { Recipe, RecipeStatus } from "@/lib/types";
 import { getSavedRecipe, RecipeApiError, updateSavedRecipe } from "@/lib/recipe-api";
+import { Check } from "lucide-react";
 import { RecipeForm } from "@/components/RecipeForm";
-import { PageHeader } from "@/components/PageHeader";
+import { AppShell, BackButton, PageHeader } from "@/components/PageHeader";
+import { RecipeLoadError, RecipeNotFound } from "@/components/RecipeStates";
+import { ButtonLink } from "@/components/ui/Button";
+import { EmptyState, PageLoading } from "@/components/ui/States";
 
 function EditContent() {
   const t = useTranslations();
@@ -18,6 +21,7 @@ function EditContent() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [saveError, setSaveError] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
@@ -55,104 +59,71 @@ function EditContent() {
   }, [id, reloadKey]);
 
   const handleSubmit = async (data: Omit<Recipe, "id" | "source">) => {
-    if (!id) return;
+    if (!id || saving) return;
+    setSaving(true);
     setSaveError(false);
     try {
       await updateSavedRecipe(id, data);
       setSaved(true);
     } catch {
       setSaveError(true);
+    } finally {
+      setSaving(false);
     }
   };
 
+  let body;
   if (saved) {
-    return (
-      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-        <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-          <p className="mb-4 text-xl font-semibold text-green-600 dark:text-green-400">
-            ✓ {t("recipeSaved")}
-          </p>
-          <Link
-            href={`/recipe?id=${id}`}
-            className="rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-700"
-          >
-            {t("back")}
-          </Link>
-        </main>
-      </div>
+    body = (
+      <EmptyState
+        icon={Check}
+        title={t("recipeSaved")}
+        actions={
+          <ButtonLink href={`/recipe?id=${id}`} variant="primary">
+            {t("backList")}
+          </ButtonLink>
+        }
+      />
     );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-        <main className="mx-auto max-w-3xl px-4 py-16 text-center text-zinc-500 dark:text-zinc-400">
-          {t("loadingRecipes")}
-        </main>
-      </div>
-    );
-  }
-
-  if (loadError) {
-    return (
-      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-        <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-          <p className="mb-4 text-red-500">{t("recipeLoadError")}</p>
-          <button
-            type="button"
-            onClick={() => setReloadKey((key) => key + 1)}
-            className="cursor-pointer font-medium text-amber-600 hover:text-amber-700"
-          >
-            {t("retry")}
-          </button>
-        </main>
-      </div>
-    );
-  }
-
-  if (!recipe) {
-    return (
-      <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-        <main className="mx-auto max-w-3xl px-4 py-16">
-          <div className="text-center">
-            <p className="mb-4 text-zinc-500 dark:text-zinc-400">{t("notFound")}</p>
-            <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
-              ← {t("back")}
-            </Link>
-          </div>
-        </main>
-      </div>
+  } else if (loading) {
+    body = <PageLoading label={t("loadingRecipe")} />;
+  } else if (loadError) {
+    body = <RecipeLoadError onRetry={() => setReloadKey((key) => key + 1)} />;
+  } else if (!recipe) {
+    body = <RecipeNotFound />;
+  } else {
+    body = (
+      <>
+        <h1 className="font-display text-display-l tracking-[-0.01em]">{t("editRecipeTitle")}</h1>
+        <RecipeForm
+          initialData={recipe}
+          onSubmit={handleSubmit}
+          cancelHref={`/recipe?id=${id}`}
+          submitLabel={t("saveRecipe")}
+          saving={saving}
+          error={saveError ? t("recipeSaveError") : null}
+        />
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <PageHeader
-        left={
-          <Link
-            href={`/recipe?id=${id}`}
-            className="font-medium text-amber-600 hover:text-amber-700"
-          >
-            ← {t("backList")}
-          </Link>
-        }
-      />
-
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-          {t("editRecipeTitle")}
-        </h1>
-
-        {saveError ? <p className="mb-4 text-sm text-red-500">{t("recipeSaveError")}</p> : null}
-        <RecipeForm initialData={recipe} onSubmit={handleSubmit} />
-      </main>
-    </div>
+    <AppShell
+      header={
+        <PageHeader
+          left={<BackButton href={id ? `/recipe?id=${id}` : "/recipes"} />}
+          title={recipe?.name}
+        />
+      }
+    >
+      {body}
+    </AppShell>
   );
 }
 
 export default function EditRecipePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-50 dark:bg-zinc-950" />}>
+    <Suspense fallback={<div className="bg-paper min-h-screen" />}>
       <EditContent />
     </Suspense>
   );

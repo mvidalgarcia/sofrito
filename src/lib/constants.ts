@@ -1,5 +1,7 @@
 export const DEFAULT_LOCALE = "es";
 export const DEFAULT_SERVINGS = 4;
+/** Servings preselected on the home search; most cooks are feeding two. */
+export const SEARCH_DEFAULT_SERVINGS = 2;
 export const MIN_SERVINGS = 1;
 export const MAX_SERVINGS = 12;
 export const DEFAULT_MODEL = "openai/gpt-oss-120b";

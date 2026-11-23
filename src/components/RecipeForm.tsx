@@ -2,19 +2,38 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { Check } from "lucide-react";
 import { Recipe } from "@/lib/types";
 import { DEFAULT_SERVINGS } from "@/lib/constants";
 import { IngredientInput, IngredientField } from "@/components/IngredientInput";
 import { StepInput } from "@/components/StepInput";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Field, FieldError, Input, Label } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
+import { ServingsStepper } from "@/components/ui/ServingsStepper";
+import { Spinner } from "@/components/ui/States";
 
 const EMPTY_INGREDIENT: IngredientField = { item: "", amount: "" };
 
 interface RecipeFormProps {
   initialData?: Recipe;
   onSubmit: (recipe: Omit<Recipe, "id" | "source">) => void;
+  /** Where Cancel goes. */
+  cancelHref: string;
+  submitLabel: string;
+  saving?: boolean;
+  /** Save error from the page, shown next to the buttons. */
+  error?: string | null;
 }
 
-export function RecipeForm({ initialData, onSubmit }: RecipeFormProps) {
+export function RecipeForm({
+  initialData,
+  onSubmit,
+  cancelHref,
+  submitLabel,
+  saving = false,
+  error,
+}: RecipeFormProps) {
   const t = useTranslations();
 
   const [name, setName] = useState(initialData?.name ?? "");
@@ -52,67 +71,47 @@ export function RecipeForm({ initialData, onSubmit }: RecipeFormProps) {
     });
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          {t("recipeName")}
-        </label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t("recipeNamePlaceholder")}
-          className={`w-full rounded-lg border bg-white px-4 py-2 text-zinc-900 focus:outline-none dark:bg-zinc-900 dark:text-zinc-100 ${
-            submitted && !name.trim()
-              ? "border-red-400 focus:border-red-500"
-              : "border-zinc-300 focus:border-amber-500 dark:border-zinc-700"
-          }`}
-        />
-        {submitted && !name.trim() && (
-          <p className="mt-1 text-sm text-red-500">{t("requiredField")}</p>
-        )}
-      </div>
+  const nameMissing = submitted && !name.trim();
 
-      <div className="grid grid-cols-3 gap-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {t("servings")}
-          </label>
-          <input
-            type="number"
-            min={1}
-            max={12}
-            value={servings}
-            onChange={(e) => setServings(Number(e.target.value))}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 focus:border-amber-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+  return (
+    <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-8">
+      <section className="flex flex-col gap-4">
+        <Field>
+          <Label htmlFor="recipe-name">{t("recipeName")}</Label>
+          <Input
+            id="recipe-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("recipeNamePlaceholder")}
+            aria-invalid={nameMissing || undefined}
+            aria-describedby={nameMissing ? "recipe-name-error" : undefined}
           />
+          {nameMissing ? (
+            <FieldError id="recipe-name-error">{t("requiredField")}</FieldError>
+          ) : null}
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field>
+            <Label htmlFor="recipe-prep">{t("prepTime")}</Label>
+            <Input
+              id="recipe-prep"
+              value={prepTime}
+              onChange={(e) => setPrepTime(e.target.value)}
+              placeholder="e.g. 15 min"
+            />
+          </Field>
+          <Field>
+            <Label htmlFor="recipe-cook">{t("cookTime")}</Label>
+            <Input
+              id="recipe-cook"
+              value={cookTime}
+              onChange={(e) => setCookTime(e.target.value)}
+              placeholder="e.g. 30 min"
+            />
+          </Field>
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {t("prepTime")}
-          </label>
-          <input
-            type="text"
-            value={prepTime}
-            onChange={(e) => setPrepTime(e.target.value)}
-            placeholder="e.g. 15 min"
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 focus:border-amber-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            {t("cookTime")}
-          </label>
-          <input
-            type="text"
-            value={cookTime}
-            onChange={(e) => setCookTime(e.target.value)}
-            placeholder="e.g. 30 min"
-            className="w-full rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 focus:border-amber-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          />
-        </div>
-      </div>
+        <ServingsStepper value={servings} onChange={setServings} />
+      </section>
 
       <IngredientInput
         ingredients={ingredients}
@@ -138,12 +137,18 @@ export function RecipeForm({ initialData, onSubmit }: RecipeFormProps) {
         submitted={submitted}
       />
 
-      <button
-        type="submit"
-        className="w-full cursor-pointer rounded-lg bg-amber-600 px-4 py-3 font-medium text-white transition-colors hover:bg-amber-700"
-      >
-        {t("saveRecipe")}
-      </button>
+      <div className="border-line flex flex-col gap-3 border-t pt-4">
+        {error ? <FieldError>{error}</FieldError> : null}
+        <div className="flex justify-end gap-2">
+          <ButtonLink href={cancelHref} variant="ghost">
+            {t("cancel")}
+          </ButtonLink>
+          <Button type="submit" variant="primary" disabled={saving}>
+            {saving ? <Spinner /> : <Icon icon={Check} />}
+            {submitLabel}
+          </Button>
+        </div>
+      </div>
     </form>
   );
 }

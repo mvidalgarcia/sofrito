@@ -1,23 +1,49 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { Recipe, SavedRecipeState } from "@/lib/types";
-import {
-  DEFAULT_LOCALE,
-  COPY_FEEDBACK_DURATION_MS,
-  MIN_SERVINGS,
-  MAX_SERVINGS,
-} from "@/lib/constants";
+import { Check, Share2, Sparkles } from "lucide-react";
+import type { ReactNode } from "react";
+import { Recipe, RecipeStatus, SavedRecipeState } from "@/lib/types";
+import { DEFAULT_LOCALE, COPY_FEEDBACK_DURATION_MS } from "@/lib/constants";
 import { scaleIngredientAmount } from "@/lib/scale-ingredient";
 import { toShareableRecipe } from "@/lib/recipe-share";
 import { ActionButtons } from "./ActionButtons";
 import { useEffect, useMemo, useState } from "react";
+import { SourceBadge, StatusBadge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
+import { RecipeMeta } from "@/components/ui/RecipeMeta";
+import { ServingsStepper } from "@/components/ui/ServingsStepper";
+
+/** Tool button for the recipe head: icon-only on phones, labelled from desktop up. */
+export const recipeToolClasses = "w-11 px-0 lg:w-auto lg:px-4";
+
+/** One-line disclosure shown above recipes written by the model. */
+export function GeneratedNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="bg-saffron-soft text-body-s text-saffron-ink flex items-start gap-2 rounded-md px-4 py-3">
+      <Icon icon={Sparkles} size={16} className="mt-0.5" />
+      <span>{children}</span>
+    </p>
+  );
+}
 
 interface RecipeDetailProps {
   recipe: Recipe;
   showShareButton?: boolean;
   savedRecipe?: SavedRecipeState | null;
   onSaved?: (saved: SavedRecipeState) => void;
+  /** Extra tools beside Share, e.g. Edit and Delete for the owner. */
+  tools?: ReactNode;
+  /** Shown between the head and the ingredients (confirmations, notices). */
+  notice?: ReactNode;
+  /** Small uppercase line above the title. */
+  eyebrow?: string;
+  /** Show the source badge (only where generated and hand-written recipes mix). */
+  showSource?: boolean;
+  /** Two-column desktop layout; only on full recipe pages. */
+  wide?: boolean;
+  headingLevel?: "h1" | "h2";
 }
 
 export function RecipeDetail({
@@ -25,15 +51,28 @@ export function RecipeDetail({
   showShareButton = true,
   savedRecipe,
   onSaved,
+  tools,
+  notice,
+  eyebrow,
+  showSource = false,
+  wide = false,
+  headingLevel: Heading = "h1",
 }: RecipeDetailProps) {
   const t = useTranslations();
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [displayServings, setDisplayServings] = useState(recipe.servings);
+  const [status, setStatus] = useState<RecipeStatus | null>(
+    savedRecipe?.status ?? recipe.status ?? null,
+  );
 
   useEffect(() => {
     setDisplayServings(recipe.servings);
   }, [recipe.id, recipe.servings]);
+
+  useEffect(() => {
+    setStatus(savedRecipe?.status ?? recipe.status ?? null);
+  }, [savedRecipe?.status, recipe.status]);
 
   const scaleFactor = displayServings / recipe.servings;
   const scaledIngredients = useMemo(
@@ -68,114 +107,148 @@ export function RecipeDetail({
     }
   };
 
+  const hasTools = showShareButton || Boolean(tools);
+  const hasBadges = Boolean(status) || (showSource && recipe.source);
+
   return (
-    <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-zinc-900">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{recipe.name}</h2>
-        {recipe.source && (
-          <span
-            className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
-              recipe.source === "llm"
-                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+    <article className="flex flex-col gap-8">
+      <div
+        className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 gap-y-3 [grid-template-areas:'badges_tools'_'title_title'_'meta_meta'_'actions_actions'] ${
+          wide
+            ? "lg:gap-y-4 lg:[grid-template-areas:'badges_badges'_'title_title'_'meta_meta'_'actions_tools']"
+            : ""
+        }`}
+      >
+        <div className="flex flex-wrap items-center gap-2 [grid-area:badges]">
+          {eyebrow ? (
+            <p className="text-label text-ink-muted font-semibold tracking-[0.08em] uppercase">
+              {eyebrow}
+            </p>
+          ) : null}
+          {hasBadges ? (
+            <>
+              {status ? <StatusBadge status={status} /> : null}
+              {showSource && recipe.source ? <SourceBadge source={recipe.source} /> : null}
+            </>
+          ) : null}
+        </div>
+
+        {hasTools ? (
+          <div
+            className={`-my-2.5 -mr-2.5 flex items-center gap-1 self-center [grid-area:tools] ${
+              wide ? "lg:my-0 lg:-mr-4" : ""
             }`}
           >
-            {recipe.source === "llm" ? "LLM" : "Manual"}
-          </span>
-        )}
-      </div>
-
-      <div className="mb-6 flex flex-wrap gap-4 text-sm text-zinc-600 dark:text-zinc-400">
-        <div className="flex items-center gap-2">
-          <span>🍽️ {t("servings")}:</span>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label={t("decreaseServings")}
-              data-testid="decrease-servings"
-              onClick={() => setDisplayServings(Math.max(MIN_SERVINGS, displayServings - 1))}
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-            >
-              −
-            </button>
-            <span
-              data-testid="display-servings"
-              className="flex h-7 min-w-8 items-center justify-center rounded-lg bg-zinc-50 px-2 text-sm font-semibold text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100"
-            >
-              {displayServings}
-            </span>
-            <button
-              type="button"
-              aria-label={t("increaseServings")}
-              data-testid="increase-servings"
-              onClick={() => setDisplayServings(Math.min(MAX_SERVINGS, displayServings + 1))}
-              className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-            >
-              +
-            </button>
-          </div>
-        </div>
-        <span>
-          ⏱️ {t("prepTime")}: {recipe.prepTime}
-        </span>
-        <span>
-          🔥 {t("cookTime")}: {recipe.cookTime}
-        </span>
-      </div>
-
-      <div className="mb-6">
-        <h3 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          {t("ingredients")}
-        </h3>
-        <ul className="grid grid-cols-1 gap-2 md:grid-cols-2">
-          {scaledIngredients.map((ing, i) => {
-            const showApproximate = scaleFactor !== 1 && !ing.scaled;
-            return (
-              <li
-                key={i}
-                className={
-                  showApproximate
-                    ? "text-zinc-500 italic dark:text-zinc-500"
-                    : "text-zinc-700 dark:text-zinc-300"
-                }
-                title={showApproximate ? t("approximateAmount") : undefined}
+            {showShareButton ? (
+              <Button
+                variant="ghost"
+                className={wide ? recipeToolClasses : "w-11 px-0"}
+                onClick={handleShare}
+                disabled={sharing}
+                aria-label={copied ? t("copiedLink") : t("shareRecipe")}
               >
-                • {showApproximate ? "~ " : ""}
-                {ing.amount} {ing.item}
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+                <Icon icon={copied ? Check : Share2} />
+                <span aria-hidden="true" className={wide ? "hidden lg:inline" : "hidden"}>
+                  {copied ? t("copiedLink") : t("share")}
+                </span>
+              </Button>
+            ) : null}
+            {tools}
+          </div>
+        ) : null}
 
-      <div>
-        <h3 className="mb-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          {t("steps")}
-        </h3>
-        <ol className="space-y-3">
-          {recipe.steps.map((step, i) => (
-            <li key={i} className="flex gap-3 text-zinc-700 dark:text-zinc-300">
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                {i + 1}
-              </span>
-              {step}
-            </li>
-          ))}
-        </ol>
-      </div>
+        <Heading
+          className={`font-display text-display-l tracking-[-0.01em] text-balance [grid-area:title] ${
+            wide ? "lg:max-w-[760px] lg:text-[56px] lg:leading-[60px] lg:tracking-[-0.015em]" : ""
+          }`}
+        >
+          {recipe.name}
+        </Heading>
 
-      <ActionButtons recipe={recipe} savedRecipe={savedRecipe} onSaved={onSaved} />
+        <RecipeMeta
+          prepTime={recipe.prepTime}
+          cookTime={recipe.cookTime}
+          long
+          className="text-[15px] [grid-area:meta]"
+        />
 
-      {showShareButton && (
-        <div className="mt-6 border-t border-zinc-200 pt-6 dark:border-zinc-700">
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-2 rounded-lg bg-zinc-100 px-4 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          >
-            {sharing ? "..." : copied ? "✓ " + t("copied") : "🔗 " + t("share")}
-          </button>
+        <div className="pt-1 [grid-area:actions]">
+          <ActionButtons
+            recipe={recipe}
+            savedRecipe={savedRecipe}
+            onSaved={(saved) => {
+              setStatus(saved.status);
+              onSaved?.(saved);
+            }}
+          />
         </div>
-      )}
-    </div>
+      </div>
+
+      {notice}
+
+      <div
+        className={`flex flex-col gap-8 ${
+          wide
+            ? "lg:border-line lg:grid lg:grid-cols-[340px_minmax(0,1fr)] lg:items-start lg:gap-16 lg:border-t lg:pt-10"
+            : ""
+        }`}
+      >
+        <section
+          className={`flex flex-col gap-4 ${
+            wide ? "lg:border-line lg:bg-paper-raised lg:rounded-md lg:border lg:p-6" : ""
+          }`}
+        >
+          <ServingsStepper
+            value={displayServings}
+            onChange={setDisplayServings}
+            withTestIds
+            className={`border-line order-first border-y py-3 ${
+              wide ? "lg:order-none lg:border-0 lg:py-0" : ""
+            }`}
+          />
+          <h2 className={`font-display text-title ${wide ? "lg:order-first" : ""}`}>
+            {t("ingredients")}
+          </h2>
+          <ul>
+            {scaledIngredients.map((ing, i) => {
+              const showApproximate = scaleFactor !== 1 && !ing.scaled;
+              return (
+                <li
+                  key={i}
+                  className={`border-line grid grid-cols-[6.5rem_minmax(0,1fr)] gap-3 border-b py-3 last:border-b-0 ${
+                    wide ? "lg:grid-cols-[5.5rem_minmax(0,1fr)]" : ""
+                  }`}
+                >
+                  <span
+                    className={`text-[15px] font-semibold tabular-nums ${
+                      showApproximate ? "text-ink-muted italic" : "text-ink"
+                    }`}
+                    title={showApproximate ? t("approximateAmount") : undefined}
+                  >
+                    {showApproximate ? "~ " : ""}
+                    {ing.amount}
+                  </span>{" "}
+                  <span>{ing.item}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <section className="flex flex-col gap-5 lg:gap-6">
+          <h2 className="font-display text-title">{t("steps")}</h2>
+          <ol className="flex flex-col gap-6 lg:gap-7">
+            {recipe.steps.map((step, i) => (
+              <li key={i} className="grid grid-cols-[2.25rem_minmax(0,1fr)] items-baseline gap-3">
+                <span className="font-display text-step-number text-tomato lining-nums">
+                  {i + 1}
+                </span>
+                <p className="text-body-l max-w-[60ch]">{step}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+      </div>
+    </article>
   );
 }

@@ -15,12 +15,12 @@ test.describe("Rescale saved recipe", () => {
 
     await page.getByPlaceholder("Amount").first().fill("2 cups");
     await page.getByPlaceholder("Ingredient").first().fill("flour");
-    await page.getByRole("button", { name: /^\+ Add$/ }).click();
+    await page.getByRole("button", { name: "Add ingredient" }).click();
     await page.getByPlaceholder("Amount").nth(1).fill("a pinch");
     await page.getByPlaceholder("Ingredient").nth(1).fill("salt");
 
     await page.getByPlaceholder("Describe this step...").fill("Mix and cook.");
-    await page.getByRole("button", { name: "Save recipe" }).click();
+    await page.getByRole("button", { name: "Create recipe" }).click();
     await expect(page.getByText("Recipe saved!")).toBeVisible();
 
     await page.getByRole("link", { name: "View my recipes" }).click();

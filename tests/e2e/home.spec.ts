@@ -5,14 +5,14 @@ test.describe("Home page", () => {
     await page.goto("/es");
   });
 
-  test("loads with correct title and subtitle", async ({ page }) => {
-    await expect(page.getByRole("heading", { name: "Sofrito" })).toBeVisible();
-    await expect(page.getByText("Encuentra la receta perfecta")).toBeVisible();
+  test("loads with the masthead and intro", async ({ page }) => {
+    await expect(page.getByRole("heading", { name: "¿Qué hay en tu cocina?" })).toBeVisible();
+    await expect(page.getByText("Busca un plato o dinos qué tienes")).toBeVisible();
   });
 
   test("toggles between search modes", async ({ page }) => {
-    const byNameBtn = page.getByRole("button", { name: "Buscar por nombre" });
-    const byIngredientsBtn = page.getByRole("button", { name: "Buscar por ingredientes" });
+    const byNameBtn = page.getByRole("button", { name: "Por plato" });
+    const byIngredientsBtn = page.getByRole("button", { name: "Por ingredientes" });
 
     await expect(byNameBtn).toBeVisible();
     await expect(byIngredientsBtn).toBeVisible();
@@ -26,9 +26,9 @@ test.describe("Home page", () => {
     await expect(searchInput).toBeVisible();
   });
 
-  test("shows servings input in name mode", async ({ page }) => {
+  test("shows servings input in name mode, defaulting to 2", async ({ page }) => {
     await expect(page.getByText("Porciones")).toBeVisible();
-    await expect(page.getByText("4")).toBeVisible();
+    await expect(page.getByRole("group", { name: "Porciones" })).toContainText("2");
   });
 
   test("navigates to my recipes page", async ({ page }) => {
