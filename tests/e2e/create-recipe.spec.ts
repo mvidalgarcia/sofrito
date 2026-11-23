@@ -8,14 +8,14 @@ test.describe("Create recipe manually", () => {
   });
 
   test("navigates to the new recipe form", async ({ page }) => {
-    await page.getByRole("link", { name: "New recipe" }).click();
+    await page.getByRole("link", { name: "Write a recipe" }).click();
     await expect(page).toHaveURL(/\/(en|es)\/recipe\/new/);
-    await expect(page.getByRole("heading", { name: "Create a recipe" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Write a recipe" })).toBeVisible();
   });
 
   test("shows validation errors on empty submit", async ({ page }) => {
     await page.goto("/en/recipe/new");
-    await page.getByRole("button", { name: "Save recipe" }).click();
+    await page.getByRole("button", { name: "Create recipe" }).click();
 
     await expect(page.getByText("This field is required")).toBeVisible();
     await expect(page.getByText("Add at least one ingredient")).toBeVisible();
@@ -34,25 +34,25 @@ test.describe("Create recipe manually", () => {
 
     await amountInputs.first().fill("4");
     await itemInputs.first().fill("eggs");
-    await page.getByRole("button", { name: /^\+ Add$/ }).click();
+    await page.getByRole("button", { name: "Add ingredient" }).click();
     await amountInputs.nth(1).fill("2");
     await itemInputs.nth(1).fill("potatoes");
-    await page.getByRole("button", { name: /^\+ Add$/ }).click();
+    await page.getByRole("button", { name: "Add ingredient" }).click();
     await amountInputs.nth(2).fill("1");
     await itemInputs.nth(2).fill("onion");
 
     await page
       .getByPlaceholder("Describe this step...")
       .fill("Peel and slice the potatoes thinly.");
-    await page.getByRole("button", { name: "+ Add step" }).click();
+    await page.getByRole("button", { name: "Add step" }).click();
     await page
       .getByPlaceholder("Describe this step...")
       .nth(1)
       .fill("Beat the eggs and mix with the potatoes.");
-    await page.getByRole("button", { name: "+ Add step" }).click();
+    await page.getByRole("button", { name: "Add step" }).click();
     await page.getByPlaceholder("Describe this step...").nth(2).fill("Fry in hot oil until set.");
 
-    await page.getByRole("button", { name: "Save recipe" }).click();
+    await page.getByRole("button", { name: "Create recipe" }).click();
 
     await expect(page.getByText("Recipe saved!")).toBeVisible();
 
@@ -67,12 +67,12 @@ test.describe("Create recipe manually", () => {
     await page.getByPlaceholder("Amount").first().fill("1");
     await page.getByPlaceholder("Ingredient").first().fill("lettuce");
     await page.getByPlaceholder("Describe this step...").fill("Wash and chop.");
-    await page.getByRole("button", { name: "Save recipe" }).click();
+    await page.getByRole("button", { name: "Create recipe" }).click();
 
     await expect(page.getByText("Recipe saved!")).toBeVisible();
 
     await page.getByRole("button", { name: "Create another" }).click();
-    await expect(page.getByRole("heading", { name: "Create a recipe" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Write a recipe" })).toBeVisible();
     const nameInput = page.getByPlaceholder("e.g. Chicken Tikka Masala");
     await expect(nameInput).toBeEmpty();
   });
