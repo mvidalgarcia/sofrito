@@ -14,10 +14,17 @@ function extractLocale(parts: string[]): Locale {
     : routing.defaultLocale;
 }
 
-const PUBLIC_PATHS = new Set(["login"]);
+/** Only for signed-out visitors: signed-in users are sent home. */
+const GUEST_ONLY_PATHS = new Set(["login"]);
+/** Open to everyone, signed in or not: shared recipe links. */
+const OPEN_PATHS = new Set(["share"]);
 
-function isPublic(path: string): boolean {
-  return PUBLIC_PATHS.has(path);
+function isGuestOnly(path: string): boolean {
+  return GUEST_ONLY_PATHS.has(path);
+}
+
+function isOpen(path: string): boolean {
+  return OPEN_PATHS.has(path);
 }
 
 function redirectToLogin(baseUrl: string, callbackPath: string, locale: Locale): Response {
@@ -36,12 +43,14 @@ export default auth((req) => {
   const parts = req.nextUrl.pathname.split("/").filter(Boolean);
   const locale = extractLocale(parts);
 
-  if (!req.auth && !isPublic(parts[parts.length - 1])) {
+  const page = parts[parts.length - 1];
+
+  if (!req.auth && !isGuestOnly(page) && !isOpen(page)) {
     // Keep the query string (e.g. share ?id=...) so deep links survive the login redirect
     return redirectToLogin(req.url, req.nextUrl.pathname + req.nextUrl.search, locale);
   }
 
-  if (req.auth && isPublic(parts[parts.length - 1])) {
+  if (req.auth && isGuestOnly(page)) {
     return redirectToHome(locale, req.url);
   }
 
