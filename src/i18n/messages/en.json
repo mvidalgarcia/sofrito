@@ -65,5 +65,9 @@
   "recipeLoadError": "Could not load your recipes. Please try again.",
   "recipeSaveError": "Could not save the recipe. Please try again.",
   "recipeDeleteError": "Could not delete the recipe. Please try again.",
-  "retry": "Try again"
+  "retry": "Try again",
+  "sourceLlm": "Suggested",
+  "sourceManual": "My recipe",
+  "prepShort": "{time} prep",
+  "cookShort": "{time} cook"
 }
