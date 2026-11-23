@@ -109,5 +109,9 @@
   "recipeLoadErrorTitle": "Algo ha fallado",
   "searchErrorTitle": "No pudimos escribir la receta",
   "notFoundText": "Puede que el enlace sea antiguo o que la receta se haya eliminado.",
-  "addIngredientShort": "Añadir"
+  "addIngredientShort": "Añadir",
+  "signIn": "Iniciar sesión",
+  "keepRecipeTitle": "Guarda esta receta",
+  "keepRecipeText": "Inicia sesión para guardarla en tus recetas y ajustarla cada vez que cocines.",
+  "keepRecipeButton": "Guardar en mis recetas"
 }

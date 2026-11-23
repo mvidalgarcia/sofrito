@@ -44,6 +44,8 @@ interface RecipeDetailProps {
   /** Two-column desktop layout; only on full recipe pages. */
   wide?: boolean;
   headingLevel?: "h1" | "h2";
+  /** Replaces the Save / Mark as made buttons (e.g. for signed-out visitors). */
+  actions?: ReactNode;
 }
 
 export function RecipeDetail({
@@ -57,6 +59,7 @@ export function RecipeDetail({
   showSource = false,
   wide = false,
   headingLevel: Heading = "h1",
+  actions,
 }: RecipeDetailProps) {
   const t = useTranslations();
   const [copied, setCopied] = useState(false);
@@ -172,16 +175,22 @@ export function RecipeDetail({
           className="text-[15px] [grid-area:meta]"
         />
 
-        <div className="pt-1 [grid-area:actions]">
-          <ActionButtons
-            recipe={recipe}
-            savedRecipe={savedRecipe}
-            onSaved={(saved) => {
-              setStatus(saved.status);
-              onSaved?.(saved);
-            }}
-          />
-        </div>
+        {actions !== undefined ? (
+          actions ? (
+            <div className="pt-1 [grid-area:actions]">{actions}</div>
+          ) : null
+        ) : (
+          <div className="pt-1 [grid-area:actions]">
+            <ActionButtons
+              recipe={recipe}
+              savedRecipe={savedRecipe}
+              onSaved={(saved) => {
+                setStatus(saved.status);
+                onSaved?.(saved);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {notice}

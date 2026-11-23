@@ -57,6 +57,7 @@ export function PageHeader({
   title,
   right,
   wide = false,
+  guest,
 }: {
   /** Replaces the wordmark, usually with a BackButton. */
   left?: ReactNode;
@@ -64,6 +65,8 @@ export function PageHeader({
   right?: ReactNode;
   /** Match the wider desktop recipe layout. */
   wide?: boolean;
+  /** Signed-out visitor: no app navigation, a Sign in link instead of the menu. */
+  guest?: ReactNode;
 }) {
   return (
     <header className="border-line bg-paper-raised relative border-b">
@@ -88,11 +91,11 @@ export function PageHeader({
               {title}
             </span>
           ) : null}
-          {wide ? <DesktopNav /> : null}
+          {wide && !guest ? <DesktopNav /> : null}
         </div>
         <div className="relative flex items-center gap-1">
           {right}
-          <HamburgerMenu />
+          {guest ?? <HamburgerMenu />}
         </div>
       </div>
     </header>
