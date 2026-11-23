@@ -1,26 +1,173 @@
 @import "tailwindcss";
 
+/*
+ * Sofrito design tokens. Raw values live on :root so the dark palette can swap them
+ * under prefers-color-scheme; @theme exposes them as Tailwind utilities
+ * (bg-paper, text-ink, border-line, rounded-md, shadow-card, font-serif, …).
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --paper: #f7f1e6;
+  --paper-raised: #fffcf6;
+  --paper-sunk: #efe6d6;
+  --line: #e3d7c3;
+  --line-strong: #97846a;
+  --ink: #2b2019;
+  --ink-muted: #6a5848;
+  --ink-faint: #857262;
+  --tomato: #b83a24;
+  --tomato-hover: #9f3220;
+  --on-tomato: #fff8f0;
+  --tomato-soft: #f6ddd3;
+  --tomato-ink: #8f2a17;
+  --saffron: #e4a23a;
+  --on-saffron: #2b2019;
+  --saffron-soft: #f6e4bf;
+  --saffron-ink: #7d520f;
+  --olive: #5d6a2b;
+  --olive-soft: #e3e6c8;
+  --olive-ink: #465020;
+  --danger: #a1261b;
+  --shadow-card-value: 0 1px 0 rgba(43, 32, 25, 0.04), 0 6px 16px -8px rgba(43, 32, 25, 0.18);
+  --shadow-pop-value: 0 12px 32px -12px rgba(43, 32, 25, 0.35);
+  --scrim: rgba(43, 32, 25, 0.28);
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --paper: #1b1612;
+    --paper-raised: #251f19;
+    --paper-sunk: #14100c;
+    --line: #3a3027;
+    --line-strong: #85745f;
+    --ink: #f3eada;
+    --ink-muted: #c0ae96;
+    --ink-faint: #9a8873;
+    --tomato: #ee7a5c;
+    --tomato-hover: #f4917a;
+    --on-tomato: #1b1612;
+    --tomato-soft: #46231a;
+    --tomato-ink: #f4a089;
+    --saffron: #efb456;
+    --on-saffron: #1b1612;
+    --saffron-soft: #3d2d15;
+    --saffron-ink: #f2c97f;
+    --olive: #a8b867;
+    --olive-soft: #2d321a;
+    --olive-ink: #c6d28b;
+    --danger: #f38a76;
+    --shadow-card-value: 0 1px 0 rgba(0, 0, 0, 0.3), 0 6px 16px -8px rgba(0, 0, 0, 0.6);
+    --shadow-pop-value: 0 12px 32px -12px rgba(0, 0, 0, 0.75);
+    --scrim: rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-paper-sunk: var(--paper-sunk);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-tomato: var(--tomato);
+  --color-tomato-hover: var(--tomato-hover);
+  --color-on-tomato: var(--on-tomato);
+  --color-tomato-soft: var(--tomato-soft);
+  --color-tomato-ink: var(--tomato-ink);
+  --color-saffron: var(--saffron);
+  --color-on-saffron: var(--on-saffron);
+  --color-saffron-soft: var(--saffron-soft);
+  --color-saffron-ink: var(--saffron-ink);
+  --color-olive: var(--olive);
+  --color-olive-soft: var(--olive-soft);
+  --color-olive-ink: var(--olive-ink);
+  --color-danger: var(--danger);
+  --color-scrim: var(--scrim);
+
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: var(--shadow-card-value);
+  --shadow-pop: var(--shadow-pop-value);
+}
+
+@theme {
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 20px;
+
+  /* Type scale. Display styles use the serif; everything else the sans. */
+  --text-display-xl: 44px;
+  --text-display-xl--line-height: 48px;
+  --text-display-l: 34px;
+  --text-display-l--line-height: 40px;
+  --text-title: 24px;
+  --text-title--line-height: 30px;
+  --text-card-title: 19px;
+  --text-card-title--line-height: 24px;
+  --text-step-number: 28px;
+  --text-step-number--line-height: 28px;
+  --text-body-l: 17px;
+  --text-body-l--line-height: 28px;
+  --text-body: 16px;
+  --text-body--line-height: 24px;
+  --text-body-s: 14px;
+  --text-body-s--line-height: 20px;
+  --text-button: 15px;
+  --text-button--line-height: 20px;
+  --text-label: 12px;
+  --text-label--line-height: 16px;
+  --text-label--letter-spacing: 0.08em;
+}
+
+@layer base {
+  html {
+    background: var(--paper);
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+}
+
+/* Fraunces is always set at 560 with its soft corners and wonky alternates on. */
+@utility font-display {
+  font-family: var(--font-serif);
+  font-weight: 560;
+  font-variation-settings:
+    "SOFT" 100,
+    "WONK" 1;
+}
+
+/* Saffron highlighter stroke under a word in the masthead. */
+@utility swash {
+  background: linear-gradient(
+    transparent 62%,
+    var(--saffron-soft) 62%,
+    var(--saffron-soft) 92%,
+    transparent 92%
+  );
+  box-decoration-break: clone;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
