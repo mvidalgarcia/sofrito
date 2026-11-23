@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Trash2 } from "lucide-react";
 import { Recipe, RecipeStatus } from "@/lib/types";
 import { deleteSavedRecipe } from "@/lib/recipe-api";

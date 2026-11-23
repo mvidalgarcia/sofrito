@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import NextLink from "next/link";
+import { Link } from "@/i18n/navigation";
 import { usePathname } from "next/navigation";
 import { BookOpen, Languages, LogOut, Menu, PencilLine, Search, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -44,6 +45,7 @@ export function HamburgerMenu() {
   const [open, setOpen] = useState(false);
   const { data: session } = useSession();
   const t = useTranslations();
+  const locale = useLocale();
   const pathname = usePathname() ?? "";
   const localeSwitch = useLocaleSwitch();
   const panelRef = useRef<HTMLElement>(null);
@@ -119,7 +121,8 @@ export function HamburgerMenu() {
               onNavigate={close}
             />
             <div className="bg-line mx-2 my-1 h-px" />
-            <Link
+            {/* The language switch carries its own locale prefix, so it uses the plain link. */}
+            <NextLink
               href={localeSwitch.href}
               onClick={close}
               className={itemClasses}
@@ -127,12 +130,12 @@ export function HamburgerMenu() {
             >
               <Icon icon={Languages} />
               {localeSwitch.label}
-            </Link>
+            </NextLink>
             {session?.user ? (
               <button
                 type="button"
                 className={itemClasses}
-                onClick={() => signOut({ redirectTo: "/" })}
+                onClick={() => signOut({ redirectTo: `/${locale}` })}
               >
                 <Icon icon={LogOut} />
                 {t("signOut")}
