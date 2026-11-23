@@ -109,5 +109,9 @@
   "recipeLoadErrorTitle": "Something went wrong",
   "searchErrorTitle": "We couldn’t write a recipe",
   "notFoundText": "The link may be old, or the recipe was deleted.",
-  "addIngredientShort": "Add"
+  "addIngredientShort": "Add",
+  "signIn": "Sign in",
+  "keepRecipeTitle": "Keep this recipe",
+  "keepRecipeText": "Sign in to save it to your recipes and scale it whenever you cook.",
+  "keepRecipeButton": "Save to my recipes"
 }
