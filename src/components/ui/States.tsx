@@ -1,6 +1,7 @@
 import { CircleAlert, LoaderCircle, type LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { Icon } from "./Icon";
+import { Mark } from "./Wordmark";
 
 export function EmptyState({
   icon,
@@ -31,12 +32,12 @@ export function Spinner({ size = 20 }: { size?: number }) {
   return <Icon icon={LoaderCircle} size={size} className="animate-spin" />;
 }
 
-/** One-line status plus a skeleton card, used while a recipe is being written. */
+/** The sautéing pan and a status line over skeleton cards, used while a recipe is being written. */
 export function LoadingState({ label, cards = 1 }: { label: string; cards?: number }) {
   return (
     <section aria-busy="true" className="flex flex-col gap-3">
-      <p role="status" className="text-body-s text-ink-muted flex items-center gap-2">
-        <Spinner size={16} />
+      <p role="status" className="text-body-s text-ink-muted flex items-center gap-3 pt-3">
+        <Mark size={44} animated />
         {label}
       </p>
       {Array.from({ length: cards }, (_, i) => (
@@ -54,13 +55,28 @@ export function LoadingState({ label, cards = 1 }: { label: string; cards?: numb
   );
 }
 
-/** Plain centred loading line for page-level loads. */
-export function PageLoading({ label }: { label: string }) {
+/**
+ * Page-level loading: the pan mark tossing its ingredients, with a line below.
+ * `fullScreen` centres it in the viewport, for before any page chrome exists.
+ * It fades in after a beat so quick loads don't flash it.
+ */
+export function PageLoading({
+  label,
+  fullScreen = false,
+}: {
+  label: string;
+  fullScreen?: boolean;
+}) {
   return (
-    <p role="status" className="text-ink-muted flex items-center justify-center gap-2 py-16">
-      <Spinner />
-      {label}
-    </p>
+    <div
+      role="status"
+      className={`loader-fade-in text-ink-muted flex flex-col items-center justify-center gap-4 ${
+        fullScreen ? "bg-paper min-h-screen" : "py-16"
+      }`}
+    >
+      <Mark size={72} animated />
+      <span className="text-body-s">{label}</span>
+    </div>
   );
 }
 

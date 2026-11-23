@@ -57,6 +57,7 @@
   "approximateAmount": "Aproximado — ajusta al gusto",
   "increaseServings": "Aumentar porciones",
   "decreaseServings": "Reducir porciones",
+  "loading": "Cargando…",
   "loadingRecipes": "Cargando recetas…",
   "recipeLoadError": "No se pudieron cargar tus recetas. Inténtalo de nuevo.",
   "recipeSaveError": "No se pudo guardar la receta. Inténtalo de nuevo.",

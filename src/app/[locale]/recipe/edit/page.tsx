@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, Suspense } from "react";
+import { FullPageLoading } from "@/components/FullPageLoading";
 import { useTranslations } from "next-intl";
 import { Recipe, RecipeStatus } from "@/lib/types";
 import { getSavedRecipe, RecipeApiError, updateSavedRecipe } from "@/lib/recipe-api";
@@ -123,7 +124,7 @@ function EditContent() {
 
 export default function EditRecipePage() {
   return (
-    <Suspense fallback={<div className="bg-paper min-h-screen" />}>
+    <Suspense fallback={<FullPageLoading />}>
       <EditContent />
     </Suspense>
   );

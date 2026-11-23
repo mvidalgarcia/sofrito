@@ -171,3 +171,91 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Sauté loader: <Mark animated />. The pan pulls back and flicks up, and the
+ * ingredients hop off it one after another before landing back in.
+ * Every keyframe starts and ends at rest, so with reduced motion (above) the
+ * mark simply stands still.
+ */
+.saute .saute-pan {
+  transform-box: view-box;
+  transform-origin: 58px 37px;
+  animation: saute-toss 1.3s cubic-bezier(0.45, 0, 0.3, 1) infinite;
+}
+
+.saute .saute-bit {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: saute-jump 1.3s cubic-bezier(0.3, 0, 0.4, 1) infinite;
+}
+
+.saute .saute-tomato {
+  --jump: -17px;
+  --drift: 3px;
+  --spin: -180deg;
+}
+
+.saute .saute-pepper {
+  --jump: -13px;
+  --drift: -2px;
+  --spin: 270deg;
+  animation-delay: 0.06s;
+}
+
+.saute .saute-leaf {
+  --jump: -15px;
+  --drift: 2px;
+  --spin: 360deg;
+  animation-delay: 0.12s;
+}
+
+@keyframes saute-toss {
+  0%,
+  100% {
+    transform: none;
+  }
+  /* Dip the front lip, then flick it up to throw the food. */
+  22% {
+    transform: translate(1px, 1px) rotate(-4deg);
+  }
+  36% {
+    transform: translate(-2px, -3px) rotate(9deg);
+  }
+  55% {
+    transform: none;
+  }
+  /* Catch the ingredients. */
+  74% {
+    transform: translateY(1.5px);
+  }
+}
+
+@keyframes saute-jump {
+  0%,
+  28%,
+  100% {
+    transform: none;
+  }
+  52% {
+    transform: translate(var(--drift), var(--jump)) rotate(calc(var(--spin) / 2));
+  }
+  72% {
+    transform: translateY(1px) rotate(var(--spin));
+  }
+  /* Squares turned by 90° steps and the leaf by a full turn look unturned. */
+  73% {
+    transform: none;
+  }
+}
+
+/* Don't flash the loader for loads that finish almost at once. */
+.loader-fade-in {
+  animation: loader-fade-in 0.3s ease-out 0.2s both;
+}
+
+@keyframes loader-fade-in {
+  from {
+    opacity: 0;
+  }
+}
