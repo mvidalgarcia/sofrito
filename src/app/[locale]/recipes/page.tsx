@@ -10,7 +10,7 @@ import { AppShell, BackButton, PageHeader } from "@/components/PageHeader";
 import { ButtonLink, linkClasses } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { EmptyState, ErrorAlert, PageLoading } from "@/components/ui/States";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 type Filter = RecipeStatus | "all";
 

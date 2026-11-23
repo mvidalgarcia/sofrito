@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 /**
  * The Sofrito mark: a pan with tomato, pepper and an olive leaf jumping in.

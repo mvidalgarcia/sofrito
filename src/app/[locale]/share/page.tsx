@@ -48,7 +48,7 @@ function ShareContent() {
   const signedOut = status === "unauthenticated";
   const query = searchParams.toString();
   // Bring the visitor straight back to this recipe after signing in.
-  const signInHref = `/${locale}/login?callbackUrl=${encodeURIComponent(
+  const signInHref = `/login?callbackUrl=${encodeURIComponent(
     query ? `${pathname}?${query}` : pathname,
   )}`;
   const [recipe, setRecipe] = useState<Recipe | null>(null);

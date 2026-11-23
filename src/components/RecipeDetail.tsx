@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Check, Share2, Sparkles } from "lucide-react";
 import type { ReactNode } from "react";
 import { Recipe, RecipeStatus, SavedRecipeState } from "@/lib/types";
-import { DEFAULT_LOCALE, COPY_FEEDBACK_DURATION_MS } from "@/lib/constants";
+import { COPY_FEEDBACK_DURATION_MS } from "@/lib/constants";
 import { scaleIngredientAmount } from "@/lib/scale-ingredient";
 import { toShareableRecipe } from "@/lib/recipe-share";
 import { ActionButtons } from "./ActionButtons";
@@ -97,9 +97,9 @@ export function RecipeDetail({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      const pathParts = window.location.pathname.split("/").filter(Boolean);
-      const locale = pathParts[0] || DEFAULT_LOCALE;
-      const url = `${window.location.origin}/${locale}/share?id=${data.id}`;
+      // No locale prefix: each person opens the link in their own language,
+      // and it never overwrites their saved language choice.
+      const url = `${window.location.origin}/share?id=${data.id}`;
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION_MS);
