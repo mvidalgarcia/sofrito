@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { Bookmark, LogIn } from "lucide-react";
 import { useEffect, useState, Suspense } from "react";
+import { FullPageLoading } from "@/components/FullPageLoading";
 import { useTranslations, useLocale } from "next-intl";
 import { Recipe } from "@/lib/types";
 import { generateId } from "@/lib/id";
@@ -115,7 +116,7 @@ function ShareContent() {
 
 export default function SharePage() {
   return (
-    <Suspense fallback={<div className="bg-paper min-h-screen" />}>
+    <Suspense fallback={<FullPageLoading />}>
       <ShareContent />
     </Suspense>
   );
