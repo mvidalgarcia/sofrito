@@ -1,7 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#f59e0b"/>
-  <rect x="96" y="192" width="320" height="224" rx="32" fill="#fff"/>
-  <rect x="48" y="256" width="48" height="24" rx="12" fill="#fff"/>
-  <rect x="416" y="256" width="48" height="24" rx="12" fill="#fff"/>
-  <path d="M200 112 C200 112 256 176 256 176 C256 176 312 112 312 112" stroke="#fff" fill="none" stroke-width="24" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<title>Sofrito app icon</title>
+<rect width="512" height="512" fill="#f7f1e6"/>
+<g transform="translate(256 262) scale(5.3) translate(-33 -31)">
+<g transform="translate(0 3)">
+  <path d="M7 35h38c0 10-7.5 17.5-17.5 17.5h-3C14.5 52.5 7 45 7 35z" fill="#2b2019"/>
+  <rect x="4" y="32" width="44" height="5" rx="2.5" fill="#2b2019"/>
+  <rect x="45" y="31.5" width="17" height="5" rx="2.5" fill="#2b2019" transform="rotate(-10 47 34)"/>
+  <rect x="9.5" y="15" width="11.5" height="11.5" rx="2.75" fill="#b83a24" transform="rotate(-18 15.25 20.75)"/>
+  <rect x="21.5" y="3" width="9.5" height="9.5" rx="2.5" fill="#e4a23a" transform="rotate(16 26.25 7.75)"/>
+  <path d="M31.5 25.5c2.6-6.4 9-9.6 15-8.6-1.9 6.4-9 10.2-15 8.6z" fill="#5d6a2b"/>
+  <path d="M33.6 24.2c3.4-1.9 6.6-3.6 10.4-5.4" stroke="#e3e6c8" stroke-width="1.3" stroke-linecap="round" fill="none"/>
+</g>
+</g>
 </svg>

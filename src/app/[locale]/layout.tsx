@@ -24,12 +24,16 @@ const schibsted = Schibsted_Grotesk({
 export const metadata: Metadata = {
   manifest: "/manifest.json",
   icons: {
-    apple: "/icon.svg",
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    apple: "/apple-touch-icon.png",
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f59e0b",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f7f1e6" },
+    { media: "(prefers-color-scheme: dark)", color: "#1b1612" },
+  ],
 };
 
 export default async function LocaleLayout({ children }: { children: React.ReactNode }) {

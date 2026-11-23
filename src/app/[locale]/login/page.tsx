@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Languages } from "lucide-react";
 import { buttonClasses, Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { Mark } from "@/components/ui/Wordmark";
 import { useLocaleSwitch } from "@/lib/hooks/use-locale-switch";
 
 export default function LoginPage() {
@@ -20,7 +21,8 @@ export default function LoginPage() {
     <div className="bg-paper flex min-h-screen flex-col">
       <section className="bg-saffron-soft px-6 pt-18 pb-10">
         <div className="mx-auto flex max-w-[480px] flex-col gap-5">
-          <p className="font-display text-ink text-[56px] leading-[56px] tracking-[-0.02em]">
+          <p className="font-display text-ink flex items-center gap-3 text-[56px] leading-[56px] tracking-[-0.02em]">
+            <Mark size={64} />
             sofrito
           </p>
         </div>
