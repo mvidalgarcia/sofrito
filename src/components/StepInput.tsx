@@ -1,6 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Plus, X } from "lucide-react";
+import { Button, linkClasses } from "@/components/ui/Button";
+import { FieldError, Textarea } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
 
 interface StepInputProps {
   steps: string[];
@@ -12,47 +16,47 @@ interface StepInputProps {
 
 export function StepInput({ steps, onUpdate, onAdd, onRemove, submitted }: StepInputProps) {
   const t = useTranslations();
+  const missing = submitted && steps.filter((s) => s.trim()).length === 0;
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{t("steps")}</label>
-        <button
-          type="button"
-          onClick={onAdd}
-          className="cursor-pointer text-sm font-medium text-amber-600 hover:text-amber-700"
-        >
-          + {t("addStep")}
-        </button>
-      </div>
-      <div className="space-y-2">
-        {steps.map((step, i) => (
-          <div key={i} className="flex items-start gap-2">
-            <span className="mt-2.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-              {i + 1}
-            </span>
-            <textarea
-              value={step}
-              onChange={(e) => onUpdate(i, e.target.value)}
-              placeholder={t("stepPlaceholder")}
-              rows={2}
-              className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-            {steps.length > 1 && (
-              <button
-                type="button"
-                onClick={() => onRemove(i)}
-                className="mt-2 cursor-pointer rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
-      {submitted && steps.filter((s) => s.trim()).length === 0 && (
-        <p className="mt-1 text-sm text-red-500">{t("requiredStep")}</p>
-      )}
-    </div>
+    <section className="flex flex-col gap-3">
+      <h2 className="font-display text-title">{t("steps")}</h2>
+      {steps.map((step, i) => (
+        <div key={i} className="grid grid-cols-[2.25rem_minmax(0,1fr)_2.75rem] items-start gap-2">
+          <span className="font-display text-step-number text-tomato pt-2.5 lining-nums">
+            {i + 1}
+          </span>
+          <Textarea
+            value={step}
+            onChange={(e) => onUpdate(i, e.target.value)}
+            placeholder={t("stepPlaceholder")}
+            aria-label={`${t("steps")} ${i + 1}`}
+            aria-invalid={missing || undefined}
+            rows={3}
+          />
+          {steps.length > 1 ? (
+            <Button
+              variant="ghost"
+              icon
+              onClick={() => onRemove(i)}
+              aria-label={t("removeStepRow", { n: i + 1 })}
+            >
+              <Icon icon={X} />
+            </Button>
+          ) : (
+            <span />
+          )}
+        </div>
+      ))}
+      {missing ? <FieldError>{t("requiredStep")}</FieldError> : null}
+      <button
+        type="button"
+        onClick={onAdd}
+        className={`${linkClasses} cursor-pointer self-start py-1`}
+      >
+        <Icon icon={Plus} size={18} />
+        {t("addStep")}
+      </button>
+    </section>
   );
 }

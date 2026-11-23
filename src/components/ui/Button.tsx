@@ -12,10 +12,10 @@ interface ButtonStyleOptions {
 }
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  primary: "bg-tomato text-on-tomato hover:bg-tomato-hover",
+  primary: "border-transparent bg-tomato text-on-tomato hover:bg-tomato-hover",
   secondary:
     "border-line-strong bg-paper-raised text-ink hover:bg-paper-sunk aria-pressed:border-tomato-soft aria-pressed:bg-tomato-soft aria-pressed:text-tomato-ink",
-  ghost: "bg-transparent text-ink hover:bg-paper-sunk",
+  ghost: "border-transparent bg-transparent text-ink hover:bg-paper-sunk",
 };
 
 export function buttonClasses({
@@ -25,7 +25,7 @@ export function buttonClasses({
   className = "",
 }: ButtonStyleOptions = {}) {
   return [
-    "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent",
+    "inline-flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-sm border",
     "text-button font-semibold whitespace-nowrap no-underline",
     "transition-colors duration-150 ease-out",
     "disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50",

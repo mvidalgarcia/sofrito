@@ -2,37 +2,37 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { BookOpen, Check, Plus } from "lucide-react";
 import { createSavedRecipe } from "@/lib/recipe-api";
 import { Recipe } from "@/lib/types";
 import { RecipeForm } from "@/components/RecipeForm";
-import { PageHeader } from "@/components/PageHeader";
+import { AppShell, BackButton, PageHeader } from "@/components/PageHeader";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
+import { EmptyState } from "@/components/ui/States";
 
 function SuccessScreen({ onReset }: { onReset: () => void }) {
   const t = useTranslations();
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <main className="mx-auto max-w-3xl px-4 py-16 text-center">
-        <p className="mb-4 text-xl font-semibold text-green-600 dark:text-green-400">
-          ✓ {t("recipeSaved")}
-        </p>
-        <div className="flex items-center justify-center gap-4">
-          <button
-            onClick={onReset}
-            className="cursor-pointer rounded-lg bg-amber-600 px-4 py-2 font-medium text-white transition-colors hover:bg-amber-700"
-          >
-            {t("createAnother")}
-          </button>
-          <Link
-            href="/recipes"
-            className="rounded-lg bg-zinc-100 px-4 py-2 font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
-          >
-            {t("myRecipes")}
-          </Link>
-        </div>
-      </main>
-    </div>
+    <AppShell header={<PageHeader />}>
+      <EmptyState
+        icon={Check}
+        title={t("recipeSaved")}
+        actions={
+          <div className="flex flex-wrap justify-center gap-2">
+            <ButtonLink href="/recipes" variant="primary">
+              <Icon icon={BookOpen} />
+              {t("myRecipes")}
+            </ButtonLink>
+            <Button onClick={onReset}>
+              <Icon icon={Plus} />
+              {t("createAnother")}
+            </Button>
+          </div>
+        }
+      />
+    </AppShell>
   );
 }
 
@@ -67,23 +67,19 @@ export default function NewRecipePage() {
   if (saved) return <SuccessScreen onReset={reset} />;
 
   return (
-    <div className="min-h-screen bg-zinc-50 font-sans dark:bg-zinc-950">
-      <PageHeader
-        left={
-          <Link href="/" className="font-medium text-amber-600 hover:text-amber-700">
-            ← {t("back")}
-          </Link>
-        }
+    <AppShell header={<PageHeader left={<BackButton href="/recipes" />} title={t("newRecipe")} />}>
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-display-l tracking-[-0.01em]">{t("newRecipeTitle")}</h1>
+        <p className="text-ink-muted">{t("newRecipeLede")}</p>
+      </div>
+      <RecipeForm
+        key={key}
+        onSubmit={handleSubmit}
+        cancelHref="/recipes"
+        submitLabel={t("createRecipe")}
+        saving={saving}
+        error={error ? t("recipeSaveError") : null}
       />
-
-      <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-          {t("newRecipeTitle")}
-        </h1>
-
-        {error ? <p className="mb-4 text-sm text-red-500">{t("recipeSaveError")}</p> : null}
-        <RecipeForm key={key} onSubmit={handleSubmit} />
-      </main>
-    </div>
+    </AppShell>
   );
 }

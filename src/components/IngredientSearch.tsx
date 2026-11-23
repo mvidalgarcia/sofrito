@@ -1,44 +1,151 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { Bookmark, PencilLine, Plus, Sparkles } from "lucide-react";
 import { Recipe, SavedRecipeState } from "@/lib/types";
-import { DEFAULT_SERVINGS, MIN_SERVINGS, MAX_SERVINGS } from "@/lib/constants";
+import { SEARCH_DEFAULT_SERVINGS } from "@/lib/constants";
 import { generateId } from "@/lib/id";
-import { RecipeDetail } from "@/components/RecipeDetail";
-import { ActionButtons } from "@/components/ActionButtons";
+import { createSavedRecipe, deleteSavedRecipe } from "@/lib/recipe-api";
+import { GeneratedNote, RecipeDetail } from "@/components/RecipeDetail";
+import { BackButton } from "@/components/PageHeader";
+import { Button, linkClasses } from "@/components/ui/Button";
+import { Chip } from "@/components/ui/Chip";
+import { FieldError, Input, Label } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
+import { RecipeMeta } from "@/components/ui/RecipeMeta";
+import { ServingsStepper } from "@/components/ui/ServingsStepper";
+import { ErrorAlert, LoadingState, Spinner } from "@/components/ui/States";
 
-export function IngredientSearch() {
+type Meal = "breakfast" | "lunch" | "dinner";
+
+/** Meal the cook is most likely planning, from the device's clock. */
+function mealForNow(date = new Date()): Meal {
+  const hour = date.getHours();
+  if (hour < 11) return "breakfast";
+  if (hour < 16) return "lunch";
+  return "dinner";
+}
+
+function SaveToggle({
+  recipe,
+  saved,
+  onChange,
+}: {
+  recipe: Recipe;
+  saved?: SavedRecipeState;
+  onChange: (saved: SavedRecipeState | null) => void;
+}) {
   const t = useTranslations();
-  const tError = useTranslations();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState(false);
+  const isSaved = Boolean(saved);
+
+  const toggle = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError(false);
+    try {
+      if (saved) {
+        await deleteSavedRecipe(saved.id);
+        onChange(null);
+      } else {
+        const result = await createSavedRecipe(recipe, "saved");
+        onChange({ id: result.id, status: result.status });
+      }
+    } catch {
+      setError(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Button
+      variant="ghost"
+      icon
+      className={`-mt-1.5 -mr-1.5 ${isSaved ? "text-tomato" : "text-ink-muted"} ${
+        error ? "text-danger" : ""
+      }`}
+      aria-pressed={isSaved}
+      aria-label={
+        isSaved ? t("unsaveNamed", { name: recipe.name }) : t("saveNamed", { name: recipe.name })
+      }
+      title={error ? t("recipeSaveError") : undefined}
+      onClick={toggle}
+    >
+      {busy ? <Spinner /> : <Icon icon={Bookmark} filled={isSaved} />}
+    </Button>
+  );
+}
+
+type View = "form" | "results" | "recipe";
+
+export function IngredientSearch({ onViewChange }: { onViewChange?: (view: View) => void }) {
+  const t = useTranslations();
   const locale = useLocale();
-  const [ingredients, setIngredients] = useState([""]);
+  const [draft, setDraft] = useState("");
+  const [ingredients, setIngredients] = useState<string[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [selected, setSelected] = useState<number | null>(null);
+  const [view, setView] = useState<View>("form");
   const [savedRecipes, setSavedRecipes] = useState<Record<string, SavedRecipeState>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [servings, setServings] = useState(DEFAULT_SERVINGS);
+  const [servings, setServings] = useState(SEARCH_DEFAULT_SERVINGS);
+  const [meal, setMeal] = useState<Meal>("dinner");
+  const [missing, setMissing] = useState(false);
 
-  const handleSearch = async () => {
-    const valid = ingredients.filter((i) => i.trim());
-    if (valid.length === 0) return;
+  useEffect(() => {
+    onViewChange?.(view);
+    window.scrollTo({ top: 0 });
+  }, [view, onViewChange]);
+
+  /** Split "onion, garlic" into chips, skipping duplicates. */
+  const addDraft = (value = draft) => {
+    const items = value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (items.length === 0) return ingredients;
+    const known = new Set(ingredients.map((i) => i.toLowerCase()));
+    const next = [...ingredients];
+    for (const item of items) {
+      if (!known.has(item.toLowerCase())) {
+        known.add(item.toLowerCase());
+        next.push(item.charAt(0).toUpperCase() + item.slice(1));
+      }
+    }
+    setIngredients(next);
+    setDraft("");
+    setMissing(false);
+    return next;
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const list = addDraft();
+    if (list.length === 0) {
+      setMissing(true);
+      return;
+    }
+    if (loading) return;
 
     setLoading(true);
     setError("");
     setRecipes([]);
-    setExpandedIndex(null);
+    setSelected(null);
 
     try {
       const res = await fetch("/api/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ingredients: valid, locale, servings }),
+        body: JSON.stringify({ ingredients: list, locale, servings }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || tError("apiNotConfigured"));
+        throw new Error(data.error || t("apiNotConfigured"));
       }
 
       const withIds = (data.recipes || []).map((r: Recipe) => ({
@@ -48,170 +155,163 @@ export function IngredientSearch() {
         source: "llm",
       }));
       setRecipes(withIds);
+      setMeal(mealForNow());
+      setView("results");
     } catch (err) {
-      setError(err instanceof Error ? err.message : tError("apiNotConfigured"));
+      setError(err instanceof Error ? err.message : t("apiNotConfigured"));
     } finally {
       setLoading(false);
     }
   };
 
-  const addIngredient = () => setIngredients([...ingredients, ""]);
-
-  const removeIngredient = (index: number) => {
-    if (ingredients.length > 1) {
-      setIngredients(ingredients.filter((_, i) => i !== index));
-    }
+  const setSaved = (recipeId: string, saved: SavedRecipeState | null) => {
+    setSavedRecipes((prev) => {
+      const next = { ...prev };
+      if (saved) next[recipeId] = saved;
+      else delete next[recipeId];
+      return next;
+    });
   };
 
-  const updateIngredient = (index: number, value: string) => {
-    const next = [...ingredients];
-    next[index] = value;
-    setIngredients(next);
-  };
+  if (view === "recipe" && selected !== null && recipes[selected]) {
+    const recipe = recipes[selected];
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="-ml-3 flex items-center gap-1">
+          <BackButton onClick={() => setView("results")} />
+          <button
+            type="button"
+            onClick={() => setView("results")}
+            className={`${linkClasses} cursor-pointer`}
+          >
+            {t("allSuggestions")}
+          </button>
+        </div>
+        <GeneratedNote>{t("generatedNote")}</GeneratedNote>
+        <RecipeDetail
+          recipe={recipe}
+          showShareButton={false}
+          savedRecipe={savedRecipes[recipe.id]}
+          onSaved={(saved) => setSaved(recipe.id, saved)}
+        />
+      </div>
+    );
+  }
 
-  const handleRecipeSaved = (recipeId: string, saved: SavedRecipeState) => {
-    setSavedRecipes((prev) => ({ ...prev, [recipeId]: saved }));
-  };
+  if (view === "results") {
+    return (
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <p className="text-label text-ink-muted font-semibold tracking-[0.08em] uppercase">
+            {t("resultsEyebrow", { servings })}
+          </p>
+          <h1 className="font-display text-display-l tracking-[-0.01em] text-balance">
+            {t("resultsHeading", { count: recipes.length, meal })}
+          </h1>
+          <ul className="flex flex-wrap gap-2" aria-label={t("yourIngredients")}>
+            {ingredients.map((item) => (
+              <li key={item}>
+                <Chip label={item} />
+              </li>
+            ))}
+          </ul>
+          <button
+            type="button"
+            onClick={() => setView("form")}
+            className={`${linkClasses} cursor-pointer self-start`}
+          >
+            <Icon icon={PencilLine} size={16} />
+            {t("changeIngredients")}
+          </button>
+        </div>
+
+        <GeneratedNote>{t("generatedNote")}</GeneratedNote>
+
+        <ul className="flex flex-col gap-3">
+          {recipes.map((r, i) => (
+            <li
+              key={r.id}
+              className="border-line bg-paper-raised hover:border-line-strong hover:shadow-card relative flex items-start gap-2 rounded-md border p-4 transition-[box-shadow,border-color] duration-150 ease-out"
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setSelected(i);
+                  setView("recipe");
+                }}
+                className="flex min-w-0 flex-1 cursor-pointer flex-col gap-2 rounded-sm text-left"
+              >
+                <h2 className="font-display text-card-title text-balance">{r.name}</h2>
+                <RecipeMeta servings={r.servings} prepTime={r.prepTime} cookTime={r.cookTime} />
+              </button>
+              <SaveToggle
+                recipe={r}
+                saved={savedRecipes[r.id]}
+                onChange={(saved) => setSaved(r.id, saved)}
+              />
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="mb-8 space-y-2">
-        {ingredients.map((ing, i) => (
-          <div key={i} className="flex gap-2">
-            <input
-              type="text"
-              value={ing}
-              onChange={(e) => updateIngredient(i, e.target.value)}
+    <div className="flex flex-col gap-8">
+      <form onSubmit={handleSearch} className="flex flex-col gap-5">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="ingredient">{t("ingredientsLabel")}</Label>
+          <div className="flex gap-2">
+            <Input
+              id="ingredient"
+              leadingIcon={Plus}
+              value={draft}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value.includes(",")) addDraft(value);
+                else setDraft(value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && draft.trim()) {
+                  e.preventDefault();
+                  addDraft();
+                }
+              }}
               placeholder={t("ingredientPlaceholder")}
-              className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder-zinc-400 focus:ring-2 focus:ring-amber-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              enterKeyHint="done"
+              autoComplete="off"
+              aria-invalid={missing || undefined}
             />
-            {ingredients.length > 1 && (
-              <button
-                onClick={() => removeIngredient(i)}
-                className="rounded-lg bg-zinc-100 px-3 py-3 text-zinc-500 transition-colors hover:bg-red-100 hover:text-red-600 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-              >
-                ✕
-              </button>
-            )}
+            <Button onClick={() => addDraft()} disabled={!draft.trim()}>
+              {t("addIngredientShort")}
+            </Button>
           </div>
-        ))}
-        <div className="flex gap-2">
-          <button
-            onClick={addIngredient}
-            className="rounded-lg border border-dashed border-zinc-300 px-4 py-2 text-sm text-zinc-500 transition-colors hover:border-amber-500 hover:text-amber-600 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-amber-400 dark:hover:text-amber-400"
-          >
-            + {t("addIngredient")}
-          </button>
-          <button
-            onClick={handleSearch}
-            disabled={loading || ingredients.every((i) => !i.trim())}
-            className="ml-auto rounded-lg bg-amber-600 px-6 py-2 font-medium text-white transition-colors hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading ? "..." : t("searchButton")}
-          </button>
+          {missing ? <FieldError>{t("requiredIngredient")}</FieldError> : null}
+          {ingredients.length > 0 ? (
+            <ul className="flex flex-wrap gap-2 pt-1" aria-label={t("yourIngredients")}>
+              {ingredients.map((item) => (
+                <li key={item}>
+                  <Chip
+                    label={item}
+                    removeLabel={t("removeIngredient", { item })}
+                    onRemove={() => setIngredients(ingredients.filter((i) => i !== item))}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </div>
-      </div>
 
-      <div className="mb-6 flex items-center gap-3">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          {t("servingsInput")}
-        </label>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setServings(Math.max(MIN_SERVINGS, servings - 1))}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-          >
-            −
-          </button>
-          <span className="flex h-8 w-10 items-center justify-center rounded-lg bg-white text-sm font-semibold text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
-            {servings}
-          </span>
-          <button
-            onClick={() => setServings(Math.min(MAX_SERVINGS, servings + 1))}
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700"
-          >
-            +
-          </button>
-        </div>
-      </div>
+        <ServingsStepper value={servings} onChange={setServings} />
 
-      {error && (
-        <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-600 dark:bg-red-900/20 dark:text-red-400">
-          {error}
-        </div>
-      )}
+        <Button type="submit" variant="primary" block aria-disabled={loading || undefined}>
+          {loading ? <Spinner /> : <Icon icon={Sparkles} />}
+          {loading ? t("searchingShort") : t("suggestButton")}
+        </Button>
+      </form>
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-amber-200 border-t-amber-600"></div>
-          <div className="text-lg text-zinc-600 dark:text-zinc-400">{t("searching")}</div>
-        </div>
-      )}
-
-      {recipes.length > 0 && !loading && (
-        <div>
-          <h2 className="mb-4 text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-            {t("suggestedRecipes")}
-          </h2>
-          <div className="space-y-3">
-            {recipes.map((r, i) => (
-              <div
-                key={r.id}
-                className="rounded-xl bg-white shadow transition-all dark:bg-zinc-900"
-              >
-                <button
-                  onClick={() => setExpandedIndex(expandedIndex === i ? null : i)}
-                  className="flex w-full items-center justify-between px-4 py-4 text-left"
-                >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</h3>
-                      {r.source && (
-                        <span
-                          className={`shrink-0 rounded px-2 py-0.5 text-xs font-medium ${
-                            r.source === "llm"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                              : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          }`}
-                        >
-                          {r.source === "llm" ? "LLM" : "Manual"}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                      {r.servings} 🍽️ · {r.prepTime} · {r.cookTime}
-                    </div>
-                  </div>
-                  <span className="ml-2 text-zinc-400 transition-transform data-[expanded=true]:rotate-180">
-                    ▼
-                  </span>
-                </button>
-
-                {expandedIndex !== i && (
-                  <div className="px-4 pb-2">
-                    <ActionButtons
-                      recipe={r}
-                      savedRecipe={savedRecipes[r.id]}
-                      onSaved={(saved) => handleRecipeSaved(r.id, saved)}
-                    />
-                  </div>
-                )}
-
-                {expandedIndex === i && (
-                  <div className="border-t border-zinc-200 dark:border-zinc-700">
-                    <RecipeDetail
-                      recipe={r}
-                      showShareButton={false}
-                      savedRecipe={savedRecipes[r.id]}
-                      onSaved={(saved) => handleRecipeSaved(r.id, saved)}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {error ? <ErrorAlert title={t("searchErrorTitle")} text={error} /> : null}
+      {loading ? <LoadingState label={t("suggesting", { servings })} cards={3} /> : null}
     </div>
   );
 }

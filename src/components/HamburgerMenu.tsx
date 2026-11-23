@@ -1,100 +1,146 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BookOpen, Languages, LogOut, Menu, PencilLine, Search, X } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
+import { useLocaleSwitch } from "@/lib/hooks/use-locale-switch";
 
-const OTHER_LOCALES = { es: "en", en: "es" } as const;
+const itemClasses =
+  "flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-sm px-3 text-left text-button font-semibold text-ink no-underline hover:bg-paper-sunk aria-[current=page]:text-tomato";
+
+function MenuLink({
+  href,
+  icon,
+  label,
+  current,
+  onNavigate,
+}: {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  current: boolean;
+  onNavigate: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={itemClasses}
+      aria-current={current ? "page" : undefined}
+    >
+      <Icon icon={icon} />
+      {label}
+    </Link>
+  );
+}
 
 export function HamburgerMenu() {
   const [open, setOpen] = useState(false);
   const { data: session } = useSession();
   const t = useTranslations();
-  const pathname = usePathname();
-  const currentLocale = pathname?.split("/")[1] || "es";
-  const targetLocale = OTHER_LOCALES[currentLocale as keyof typeof OTHER_LOCALES] || "en";
-  const newPathname = pathname?.replace(`/${currentLocale}`, `/${targetLocale}`) || "/en";
+  const pathname = usePathname() ?? "";
+  const localeSwitch = useLocaleSwitch();
+  const panelRef = useRef<HTMLElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Path without the locale prefix, to mark the current page.
+  const page = "/" + pathname.split("/").slice(2).join("/");
+  const close = () => setOpen(false);
+
+  useEffect(() => {
+    if (!open) return;
+    panelRef.current?.querySelector<HTMLElement>("a, button")?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        buttonRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const userName = session?.user?.name || session?.user?.email;
 
   return (
     <>
-      <button
+      <Button
+        ref={buttonRef}
+        variant="ghost"
+        icon
         onClick={() => setOpen(!open)}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
-        aria-label="Menu"
+        aria-label={open ? t("closeMenu") : t("menu")}
+        aria-expanded={open}
+        aria-controls="main-menu"
+        className={open ? "bg-paper-sunk" : ""}
       >
-        {open ? (
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        ) : (
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        )}
-      </button>
+        <Icon icon={open ? X : Menu} />
+      </Button>
 
-      {open && <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setOpen(false)} />}
-
-      <div
-        className={`fixed top-0 right-0 z-50 flex h-full w-64 flex-col bg-white shadow-lg transition-transform dark:bg-zinc-900 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-          <span className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{t("menu")}</span>
-          <button
-            onClick={() => setOpen(false)}
-            className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+      {open ? (
+        <>
+          <div className="bg-scrim fixed inset-x-0 top-14 bottom-0 z-40" onClick={close} />
+          <nav
+            id="main-menu"
+            ref={panelRef}
+            aria-label={t("menu")}
+            className="border-line bg-paper-raised shadow-pop absolute top-[calc(100%+8px)] right-0 z-50 flex w-60 flex-col gap-0.5 rounded-md border p-2"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-5">
-          {session?.user && (
-            <div className="mb-6">
-              <p className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">
-                {session.user.email}
+            {userName ? (
+              <p className="text-body-s text-ink-muted px-3 py-2">
+                {t("signedInAs", { name: userName })}
               </p>
+            ) : null}
+            <MenuLink
+              href="/"
+              icon={Search}
+              label={t("navFind")}
+              current={page === "/"}
+              onNavigate={close}
+            />
+            <MenuLink
+              href="/recipes"
+              icon={BookOpen}
+              label={t("navMyRecipes")}
+              current={page.startsWith("/recipes")}
+              onNavigate={close}
+            />
+            <MenuLink
+              href="/recipe/new"
+              icon={PencilLine}
+              label={t("navWrite")}
+              current={page.startsWith("/recipe/new")}
+              onNavigate={close}
+            />
+            <div className="bg-line mx-2 my-1 h-px" />
+            <Link
+              href={localeSwitch.href}
+              onClick={close}
+              className={itemClasses}
+              hrefLang={localeSwitch.target}
+            >
+              <Icon icon={Languages} />
+              {localeSwitch.label}
+            </Link>
+            {session?.user ? (
               <button
+                type="button"
+                className={itemClasses}
                 onClick={() => signOut({ redirectTo: "/" })}
-                className="w-full rounded-lg bg-zinc-100 px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"
               >
+                <Icon icon={LogOut} />
                 {t("signOut")}
               </button>
-            </div>
-          )}
-
-          <div className="border-t border-zinc-200 pt-4 dark:border-zinc-800">
-            <Link
-              href={newPathname}
-              onClick={() => setOpen(false)}
-              className="text-sm font-medium text-zinc-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-500"
-            >
-              {t("switchLanguage")}
-            </Link>
-          </div>
-        </div>
-      </div>
+            ) : null}
+          </nav>
+        </>
+      ) : null}
     </>
   );
 }

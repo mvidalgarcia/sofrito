@@ -1,6 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Plus, X } from "lucide-react";
+import { Button, linkClasses } from "@/components/ui/Button";
+import { FieldError, Input, labelClasses } from "@/components/ui/Field";
+import { Icon } from "@/components/ui/Icon";
 
 export interface IngredientField {
   item: string;
@@ -23,54 +27,60 @@ export function IngredientInput({
   submitted,
 }: IngredientInputProps) {
   const t = useTranslations();
+  const missing =
+    submitted && ingredients.filter((ing) => ing.item.trim() && ing.amount.trim()).length === 0;
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-          {t("ingredients")}
-        </label>
-        <button
-          type="button"
-          onClick={onAdd}
-          className="cursor-pointer text-sm font-medium text-amber-600 hover:text-amber-700"
-        >
-          + {t("addIngredient")}
-        </button>
-      </div>
-      <div className="space-y-2">
+    <section className="flex flex-col gap-3">
+      <h2 className="font-display text-title">{t("ingredients")}</h2>
+      <div className="grid grid-cols-[6.5rem_minmax(0,1fr)_2.75rem] items-center gap-2">
+        <span className={labelClasses} aria-hidden="true">
+          {t("ingredientAmount")}
+        </span>
+        <span className={labelClasses} aria-hidden="true">
+          {t("ingredientItem")}
+        </span>
+        <span />
         {ingredients.map((ing, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <input
-              type="text"
+          <div key={i} className="contents">
+            <Input
               value={ing.amount}
               onChange={(e) => onUpdate(i, "amount", e.target.value)}
               placeholder={t("ingredientAmount")}
-              className="w-28 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              aria-label={`${t("ingredientAmount")} ${i + 1}`}
+              aria-invalid={missing || undefined}
             />
-            <input
-              type="text"
+            <Input
               value={ing.item}
               onChange={(e) => onUpdate(i, "item", e.target.value)}
               placeholder={t("ingredientItem")}
-              className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-amber-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              aria-label={`${t("ingredientItem")} ${i + 1}`}
+              aria-invalid={missing || undefined}
             />
-            {ingredients.length > 1 && (
-              <button
-                type="button"
+            {ingredients.length > 1 ? (
+              <Button
+                variant="ghost"
+                icon
                 onClick={() => onRemove(i)}
-                className="cursor-pointer rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+                aria-label={t("removeIngredientRow", { n: i + 1 })}
               >
-                ✕
-              </button>
+                <Icon icon={X} />
+              </Button>
+            ) : (
+              <span />
             )}
           </div>
         ))}
       </div>
-      {submitted &&
-        ingredients.filter((ing) => ing.item.trim() && ing.amount.trim()).length === 0 && (
-          <p className="mt-1 text-sm text-red-500">{t("requiredIngredient")}</p>
-        )}
-    </div>
+      {missing ? <FieldError>{t("requiredIngredient")}</FieldError> : null}
+      <button
+        type="button"
+        onClick={onAdd}
+        className={`${linkClasses} cursor-pointer self-start py-1`}
+      >
+        <Icon icon={Plus} size={18} />
+        {t("addIngredient")}
+      </button>
+    </section>
   );
 }
