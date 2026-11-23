@@ -1,6 +1,7 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState, Suspense } from "react";
 import { FullPageLoading } from "@/components/FullPageLoading";
 import { useTranslations } from "next-intl";

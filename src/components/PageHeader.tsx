@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { usePathname } from "next/navigation";
 import { HamburgerMenu } from "@/components/HamburgerMenu";
 import { Button, ButtonLink } from "@/components/ui/Button";
