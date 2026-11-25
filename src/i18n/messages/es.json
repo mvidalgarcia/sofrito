@@ -114,5 +114,8 @@
   "signIn": "Iniciar sesión",
   "keepRecipeTitle": "Guarda esta receta",
   "keepRecipeText": "Inicia sesión para guardarla en tus recetas y ajustarla cada vez que cocines.",
-  "keepRecipeButton": "Guardar en mis recetas"
+  "keepRecipeButton": "Guardar en mis recetas",
+  "sharePreviewFallback": "Una receta compartida desde Sofrito.",
+  "shareSource": "Compartida desde Sofrito.",
+  "shareServes": "para {count}"
 }

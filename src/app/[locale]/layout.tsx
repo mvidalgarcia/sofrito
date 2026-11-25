@@ -21,7 +21,17 @@ const schibsted = Schibsted_Grotesk({
   display: "swap",
 });
 
+/** Where the app is served from. Link previews need absolute image URLs. */
+function siteUrl(): URL {
+  const host =
+    process.env.VERCEL_ENV === "production"
+      ? process.env.VERCEL_PROJECT_PRODUCTION_URL
+      : process.env.VERCEL_URL;
+  return new URL(host ? `https://${host}` : `http://localhost:${process.env.PORT || 3000}`);
+}
+
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   manifest: "/manifest.json",
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
