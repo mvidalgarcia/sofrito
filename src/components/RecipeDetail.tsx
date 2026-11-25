@@ -28,6 +28,21 @@ export function GeneratedNote({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Opens the system share sheet on touch devices. False means the caller should copy the link
+ * instead: no share sheet here, or the browser refused to open it.
+ */
+async function shareNatively(data: ShareData): Promise<boolean> {
+  if (!navigator.share || !window.matchMedia("(pointer: coarse)").matches) return false;
+  try {
+    await navigator.share(data);
+    return true;
+  } catch (e) {
+    // The user closing the sheet is not a failure.
+    return e instanceof DOMException && e.name === "AbortError";
+  }
+}
+
 interface RecipeDetailProps {
   recipe: Recipe;
   showShareButton?: boolean;
@@ -100,6 +115,7 @@ export function RecipeDetail({
       // No locale prefix: each person opens the link in their own language,
       // and it never overwrites their saved language choice.
       const url = `${window.location.origin}/share?id=${data.id}`;
+      if (await shareNatively({ title: recipe.name, url })) return;
       await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), COPY_FEEDBACK_DURATION_MS);
