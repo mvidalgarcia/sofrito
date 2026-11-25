@@ -115,10 +115,6 @@ the Preview deployment's Neon branch). A failed migration fails the build. Local
 - **LLM**: Any OpenAI-compatible API
 - **Database**: Neon Postgres with Drizzle ORM
 
-## Built With
-
-This entire application was created using [DeepSeek V4 Flash Free](https://opencode.ai) — a free, open-source LLM — via OpenCode's agent mode.
-
 ## License
 
 MIT
