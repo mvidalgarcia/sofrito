@@ -7,7 +7,7 @@ A recipe search app powered by LLMs. Find recipes by ingredients or name, save y
 - **Smart Search**: Search by recipe name or by ingredients — get up to 3 LLM-generated suggestions
 - **Save**: Keep recipes you want to cook
 - **Made**: Mark recipes you've cooked
-- **Share**: Short share links via Vercel KV (clipboard)
+- **Share**: Short share links via Vercel KV (share sheet on phones, clipboard elsewhere), with Open Graph link previews
 - **i18n**: Spanish (default) and English
 - **Dark mode**: System preference-based
 - **Responsive**: Works on mobile and desktop
