@@ -114,5 +114,8 @@
   "signIn": "Sign in",
   "keepRecipeTitle": "Keep this recipe",
   "keepRecipeText": "Sign in to save it to your recipes and scale it whenever you cook.",
-  "keepRecipeButton": "Save to my recipes"
+  "keepRecipeButton": "Save to my recipes",
+  "sharePreviewFallback": "A recipe shared from Sofrito.",
+  "shareSource": "Shared from Sofrito.",
+  "shareServes": "serves {count}"
 }
